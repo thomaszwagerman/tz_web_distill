@@ -8,6 +8,14 @@ author:
     affiliation: Centre for Ecology & Hydrology
     affiliation_url: https://example.com/spacelysprokets
 date: 03-24-2021
+preview: preview.jpg
+twitter:
+    site: @thomzwa
+    creator: @thomzwa
+categories:
+  - politics
+  - mapview
+  - ggpol
 output: distill::distill_article
 code_folding: true
 toc: true
@@ -16,6 +24,12 @@ toc: true
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 ```
+
+![](preview.jpg)
+<aside>
+Header photo by -JvL- is licensed with CC BY 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/2.0/
+</aside>
+
 
 In this short article I am exploring what the Dutch political landscape would look like if it operated under a **first-past-the-post (FPTP)** system.
 

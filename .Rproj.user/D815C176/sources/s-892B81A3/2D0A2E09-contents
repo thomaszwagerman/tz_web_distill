@@ -1,5 +1,22 @@
 ---
-title: "tz_spatial"
+title: "Blog posts"
 site: distill::distill_website
 listing: posts
 ---
+
+```{r, include=FALSE,results='asis'}
+library(metathis)
+
+meta() %>%
+  meta_social(
+    title = "The MockUp Blog",
+    description = "Thomas Zwagerman Spatial Data",
+    url = "https://tz-spatial.netlify.app/",
+    image = NULL,
+    image_alt = "testingtesting",
+    og_type = "website",
+    og_author = "Thomas Zwagerman",
+    twitter_card_type = "summary",
+    twitter_creator = "@thomzwa"
+  )
+```
