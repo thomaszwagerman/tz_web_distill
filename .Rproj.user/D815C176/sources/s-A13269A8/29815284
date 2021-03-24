@@ -5,13 +5,15 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "1863708126",
+    "hash" : "1573541039",
     "id" : "29815284",
-    "lastKnownWriteTime" : 1616591947,
-    "last_content_update" : 1616591947,
+    "lastKnownWriteTime" : 1616595160,
+    "last_content_update" : 1616595160670,
     "path" : "~/tz_web_distill/about.Rmd",
     "project_path" : "about.Rmd",
     "properties" : {
+        "cursorPosition" : "22,299",
+        "scrollLine" : "0"
     },
     "read_only" : false,
     "read_only_alternatives" : [
