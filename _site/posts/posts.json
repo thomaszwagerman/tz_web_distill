@@ -1,0 +1,36 @@
+[
+  {
+    "path": "posts/welcome/",
+    "title": "Welcome to tz_spatial",
+    "description": "Welcome to our new blog, tz_spatial. We hope you enjoy \nreading what we have to say!",
+    "author": [
+      {
+        "name": "Thomas Zwagerman",
+        "url": "https://example.com/norajones"
+      }
+    ],
+    "date": "2021-03-24",
+    "categories": [],
+    "contents": "\r\nTest header\r\nGood afternoon\r\n\r\n\r\n\r\n",
+    "preview": {},
+    "last_modified": "2021-03-24T13:26:06+00:00",
+    "input_file": "welcome.utf8.md"
+  },
+  {
+    "path": "posts/2021-03-24-what-if-the-netherlands-used-fptp/",
+    "title": "What if the Netherlands used FPTP?",
+    "description": "A new article created using the Distill format.",
+    "author": [
+      {
+        "name": "Thomas Zwagerman",
+        "url": "https://example.com/norajones"
+      }
+    ],
+    "date": "2021-03-24",
+    "categories": [],
+    "contents": "\r\n\r\nContents\r\n\r\n\r\nIn this short article I am exploring what the Dutch political landscape would look like if it operated under a first-past-the-post (FPTP) system.\r\nThe election data for the Netherlands was downloaded from the Kiesraad.\r\nResults Tweede Kamer Verkiezing 2017\r\nThese are the 2017 results summarised:\r\n\r\nparty\r\nvotes\r\nseats\r\npercentage\r\nVVD\r\n2238351\r\n33\r\n21.6\r\nPVV..Partij.voor.de.Vrijheid.\r\n1372941\r\n20\r\n13.2\r\nCDA\r\n1305217\r\n19\r\n12.6\r\nD66\r\n1288794\r\n19\r\n12.4\r\nGROENLINKS\r\n960685\r\n14\r\n9.3\r\nSP..Socialistische.Partij.\r\n955633\r\n14\r\n9.2\r\nPvdA\r\n599692\r\n9\r\n5.8\r\nChristenUnie\r\n356376\r\n5\r\n3.4\r\nPartij.voor.de.Dieren\r\n335511\r\n5\r\n3.2\r\nPartij 50PLUS\r\n327494\r\n4\r\n3.2\r\nDENK\r\n216241\r\n3\r\n2.1\r\nStaatkundig.Gereformeerde.Partij..SGP.\r\n218978\r\n3\r\n2.1\r\nFvD\r\n187388\r\n2\r\n1.8\r\n\r\nLet’s start with examining the composition of the Tweede Kamer - under a proportional representation (D’Hondt) system. This is what the Tweede Kamer looks like currently:\r\n\r\n\r\n\r\nNow let’s, have a look at what it would look like under First-past-the-Post (FPTP), with one MP elected per Gemeente.\r\n\r\n\r\n\r\nNow, there are a couple of obvious differences:\r\nThe VVD has an absolute majority, despite only having 21.6% of the vote.\r\nThere are a lot more seats in this fictional house.\r\nBut also some obvious caveats:\r\nEach Gemeente has a different population, but here Amsterdam and Appingedam are represented equally. In the UK, with its FPTP system, constituencies are somewhat based on population. This is why London has 73 MPs, while Scotland has 59 MPs.\r\nElection results on a map\r\nWe can also show these results on a map - this in an interactive map which allows you to explore the individual election results for each Gemeente.\r\n\r\npreserve629b805511f302e4\r\n\r\n\r\n\r\n\r\n",
+    "preview": {},
+    "last_modified": "2021-03-24T13:33:00+00:00",
+    "input_file": "what-if-the-netherlands-used-fptp.utf8.md"
+  }
+]
