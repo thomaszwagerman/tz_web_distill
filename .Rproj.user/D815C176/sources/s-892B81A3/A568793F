@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1616595214742.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "A568793F",
+    "lastKnownWriteTime" : 1616595247,
+    "last_content_update" : 1616595247680,
+    "path" : "~/tz_web_distill/publications.Rmd",
+    "project_path" : "publications.Rmd",
+    "properties" : {
+        "cursorPosition" : "10,27",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
