@@ -84,20 +84,20 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 </style>
 
   <!--radix_placeholder_meta_tags-->
-  <title>Thomas Zwagerman Spatial Data: Blog posts</title>
+  <title>TZ Spatial Data: Blog posts</title>
   
   
   
   
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
-  <meta property="og:title" content="Thomas Zwagerman Spatial Data: Blog posts"/>
+  <meta property="og:title" content="TZ Spatial Data: Blog posts"/>
   <meta property="og:type" content="article"/>
   <meta property="og:locale" content="en_US"/>
-  <meta property="og:site_name" content="Thomas Zwagerman Spatial Data"/>
+  <meta property="og:site_name" content="TZ Spatial Data"/>
   
   <!--  https://dev.twitter.com/cards/types/summary -->
   <meta property="twitter:card" content="summary"/>
-  <meta property="twitter:title" content="Thomas Zwagerman Spatial Data: Blog posts"/>
+  <meta property="twitter:title" content="TZ Spatial Data: Blog posts"/>
   
   <!--/radix_placeholder_meta_tags-->
   <!--radix_placeholder_rmarkdown_metadata-->
@@ -2181,11 +2181,6 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     --bkgd-color:       #0F2E3D;
   }
   
-  @media print {
-    .distill-site-nav {
-      display: none;
-    }
-  
   /*-- Additional custom styles --*/
   /* Add any additional CSS rules below                      */
   </style>
@@ -2344,16 +2339,18 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     color: var(--hover-color, white);
   }</style>
   <!--/radix_placeholder_distill-->
-  <meta name="twitter:title" content="The MockUp Blog"/>
-  <meta name="twitter:description" content="Thomas Zwagerman Spatial Data"/>
+  <meta name="twitter:title" content="TZ Spatial Data"/>
+  <meta name="twitter:description" content="TZ Spatial Data"/>
   <meta name="twitter:url" content="https://tz-spatial.netlify.app/"/>
+  <meta name="twitter:image:src" content="https://twitter.com/thomzwa/photo"/>
   <meta name="twitter:image:alt" content="testingtesting"/>
   <meta name="twitter:card" content="summary"/>
   <meta name="twitter:creator" content="@thomzwa"/>
   <meta name="twitter:site" content="@thomzwa"/>
-  <meta property="og:title" content="The MockUp Blog"/>
-  <meta property="og:description" content="Thomas Zwagerman Spatial Data"/>
+  <meta property="og:title" content="TZ Spatial Data"/>
+  <meta property="og:description" content="TZ Spatial Data"/>
   <meta property="og:url" content="https://tz-spatial.netlify.app/"/>
+  <meta property="og:image" content="https://twitter.com/thomzwa/photo"/>
   <meta property="og:image:alt" content="testingtesting"/>
   <meta property="og:type" content="website"/>
   <meta property="og:locale" content="en_US"/>
@@ -2385,7 +2382,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <header class="header header--fixed" role="banner">
 <nav class="distill-site-nav distill-site-header">
 <div class="nav-left">
-<a href="index.html" class="title">Thomas Zwagerman Spatial Data</a>
+<a href="index.html" class="title">TZ Spatial Data</a>
 <input id="distill-search" class="nav-search hidden" type="text" placeholder="Search..."/>
 </div>
 <div class="nav-right">
@@ -2537,10 +2534,10 @@ function init_posts_list() {
 
 
 
-<div class="posts-container posts-apply-limit l-page">
+<div class="posts-container posts-with-sidebar posts-apply-limit l-screen-inset">
 <div class="posts-list">
 <h1 class="posts-list-caption" data-caption="Blog posts">Blog posts</h1>
-<a href="posts/2021-03-24-what-if-the-netherlands-used-fptp/" class="post-preview">
+<a href="posts/2021-03-24-historic-animal-numbers-in-the-uk/" class="post-preview">
 <script class="post-metadata" type="text/json">{"categories":[]}</script>
 <div class="metadata">
 <div class="publishedDate">March 24, 2021</div>
@@ -2549,14 +2546,58 @@ function init_posts_list() {
 </div>
 </div>
 <div class="thumbnail">
-<img/>
+<img src="posts/2021-03-24-historic-animal-numbers-in-the-uk/preview_animals.jpg"/>
+</div>
+<div class="description">
+<h2>Historic Animal Numbers in the UK.</h2>
+<div class="dt-tags"></div>
+<p>A short description of the post.</p>
+</div>
+</a>
+<a href="posts/2021-03-24-what-if-the-netherlands-used-fptp/" class="post-preview">
+<script class="post-metadata" type="text/json">{"categories":["politics","mapview","ggpol"]}</script>
+<div class="metadata">
+<div class="publishedDate">March 24, 2021</div>
+<div class="dt-authors">
+<div class="dt-author">Thomas Zwagerman</div>
+</div>
+</div>
+<div class="thumbnail">
+<img src="posts/2021-03-24-what-if-the-netherlands-used-fptp/preview.jpg"/>
 </div>
 <div class="description">
 <h2>What if the Netherlands used FPTP?</h2>
-<div class="dt-tags"></div>
+<div class="dt-tags">
+<div class="dt-tag">politics</div>
+<div class="dt-tag">mapview</div>
+<div class="dt-tag">ggpol</div>
+</div>
 <p>Examining the difference in election outcome between FPTP and D'Hondt (proportional representation).</p>
 </div>
 </a>
+</div>
+<div class="posts-sidebar">
+<div class="sidebar-section categories">
+<h3>Categories</h3>
+<ul>
+<li>
+<a href="#category:articles">articles</a>
+<span class="category-count">(2)</span>
+</li>
+<li>
+<a href="#category:ggpol">ggpol</a>
+<span class="category-count">(1)</span>
+</li>
+<li>
+<a href="#category:mapview">mapview</a>
+<span class="category-count">(1)</span>
+</li>
+<li>
+<a href="#category:politics">politics</a>
+<span class="category-count">(1)</span>
+</li>
+</ul>
+</div>
 </div>
 <div class="posts-more">
 <a href="#">More articles &raquo;</a>

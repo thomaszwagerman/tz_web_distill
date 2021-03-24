@@ -4,30 +4,28 @@ description: |
   Examining the difference in election outcome between FPTP and D'Hondt (proportional representation).
 author:
   - name: Thomas Zwagerman 
-    url: https://example.com/norajones
+    url: https://twitter.com/thomzwa
     affiliation: Centre for Ecology & Hydrology
-    affiliation_url: https://example.com/spacelysprokets
+    affiliation_url: https://www.ceh.ac.uk/
 date: 03-24-2021
-preview: preview.jpg
-twitter:
-    site: @thomzwa
-    creator: @thomzwa
+output:
+  distill::distill_article:
+        self_contained: false
 categories:
   - politics
   - mapview
   - ggpol
-output: distill::distill_article
-code_folding: true
-toc: true
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-![](preview.jpg)
+```{r preview,echo=FALSE}
+knitr::include_graphics("preview.jpg")
+```
 <aside>
-Header photo by -JvL- is licensed with CC BY 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/2.0/
+Photo by <a href="https://unsplash.com/@michaelfousert?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Michael Fousert</a> on <a href="https://unsplash.com/s/photos/tweede-kamer?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>
 </aside>
 
 
@@ -130,7 +128,7 @@ ggplot(df_pr) +
   ggpol::geom_parliament(aes(seats = seats, fill = party),color="black") + 
   #highlight the party in control of the House with a black line
   scale_fill_manual(values = df_pr$colour, 
-                      labels = df_pr$party)+
+                    labels = df_pr$party)+
   coord_fixed()+
   theme_void()
 ```
@@ -196,7 +194,7 @@ But also some obvious caveats:
 
 We can also show these results on a map - this in an interactive map which allows you to explore the individual election results for each Gemeente.
 
-```{r interactive_map, echo=FALSE}
+```{r interactive_map, echo=FALSE, layout = "l-screen-inset"}
 #sort in long format
 df_pie <- df_results %>% 
   pivot_longer(cols = VVD:Vrije.Democratische.Partij..VDP., names_to = "party", values_to = "votes") %>%
@@ -255,9 +253,9 @@ shp_fptp <- shp_fptp %>%
   filter(percentage >0.1)
 
 mapview(shp_fptp,
-                 zcol = "party",
-                 col.regions = shp_fptp$colour,
-                 popup = popupGraph(pie_plot_list))
+        zcol = "party",
+        col.regions = shp_fptp$colour,
+        popup = popupGraph(pie_plot_list))
 
 ```
 

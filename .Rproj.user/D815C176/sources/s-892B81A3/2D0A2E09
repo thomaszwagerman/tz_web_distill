@@ -7,12 +7,12 @@
     "folds" : "",
     "hash" : "0",
     "id" : "2D0A2E09",
-    "lastKnownWriteTime" : 1616601967,
-    "last_content_update" : 1616601967542,
+    "lastKnownWriteTime" : 1616603897,
+    "last_content_update" : 1616603897192,
     "path" : "~/tz_web_distill/index.Rmd",
     "project_path" : "index.Rmd",
     "properties" : {
-        "cursorPosition" : "2,14",
+        "cursorPosition" : "16,24",
         "scrollLine" : "0"
     },
     "read_only" : false,

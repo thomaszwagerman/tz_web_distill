@@ -1,5 +1,5 @@
 name: "tz_web_distill"
-title: "Thomas Zwagerman Spatial Data"
+title: "TZ Spatial Data"
 description: |
   This is the personal website of Spatial Data Analyst Thomas Zwagerman.
 output_dir: "_site"

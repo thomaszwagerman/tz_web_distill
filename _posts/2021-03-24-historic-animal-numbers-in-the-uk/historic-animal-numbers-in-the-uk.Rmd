@@ -1,0 +1,41 @@
+---
+title: "Historic Animal Numbers in the UK."
+description: |
+  A brief outline of some work under the SPEED project at UKCEH.
+author:
+  - name: Thomas Zwagerman
+    url: https://twitter.com/thomzwa
+    affiliation: Centre for Ecology & Hydrology
+    affiliation_url: https://www.ceh.ac.uk/
+
+date: 03-24-2021
+preview: preview_animals.jpg
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r}
+knitr::include_graphics("preview_animals.jpg")
+```
+<aside>
+Photo by <a href="https://unsplash.com/@jakobcotton?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Jakob Cotton</a> on <a href="/s/photos/cows?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>
+</aside>
+
+In this article I'll outline a snapshot of some of the work I've done at [UKCEH](https://www.ceh.ac.uk/). 
+
+We're attempting to determine historic animal numbers in the UK, and spread them to historic land use.
+
+This is to get a picture of historic inputs to soil, for example for Nitrogen through slurry and manure.
+
+But another thing we're interested in is metal input to soil. But more on that later.
+
+## Obtaining animals numbers
+
+Animal numbers were downloaded from [Vision of Britain](https://www.visionofbritain.org.uk/data/dds_entity_page.jsp?ent=N_AGCEN_ANIMALS)
+

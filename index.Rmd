@@ -9,10 +9,10 @@ library(metathis)
 
 meta() %>%
   meta_social(
-    title = "The MockUp Blog",
-    description = "Thomas Zwagerman Spatial Data",
+    title = "TZ Spatial Data",
+    description = "TZ Spatial Data",
     url = "https://tz-spatial.netlify.app/",
-    image = NULL,
+    image = "https://twitter.com/thomzwa/photo",
     image_alt = "testingtesting",
     og_type = "website",
     og_author = "Thomas Zwagerman",

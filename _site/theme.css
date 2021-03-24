@@ -74,11 +74,6 @@ d-appendix {
   --bkgd-color:       #0F2E3D;
 }
 
-@media print {
-  .distill-site-nav {
-    display: none;
-  }
-
 /*-- Additional custom styles --*/
 /* Add any additional CSS rules below                      */
 
