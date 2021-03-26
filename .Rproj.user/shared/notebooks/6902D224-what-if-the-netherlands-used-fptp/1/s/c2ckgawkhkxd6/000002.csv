@@ -1,7 +1,0 @@
-"0","ggplot(df_pr) +"
-"0","  ggpol::geom_parliament(aes(seats = seats, fill = party),color=""black"") + "
-"0","  #highlight the party in control of the House with a black line"
-"0","  scale_fill_manual(values = df_pr$colour, "
-"0","                      labels = df_pr$party)+"
-"0","  coord_fixed()+"
-"0","  theme_void()"

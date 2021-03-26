@@ -49,7 +49,7 @@ library(ggpol)
 library(mapview)
 library(leafpop)
 library(leaflet)
-df_results <- read.csv("Uitslag_alle_gemeenten_TK20170315.csv", sep=";")
+df_results <- read.csv("Uitslag_alle_gemeenten_TK20210317.csv", sep=";")
 shp_gemeentes <- st_read("Gemeentegrenzen_2019-shp/Gemeentegrenzen__voorlopig____kustlijn.shp")
 colourscheme <- read.csv("partycolours.csv")
 ```
@@ -59,7 +59,7 @@ colourscheme <- read.csv("partycolours.csv")
 df_results[is.na(df_results)] <- 0
 
 df_pr <- df_results %>% 
-  pivot_longer(cols = VVD:Vrije.Democratische.Partij..VDP., names_to = "party", values_to = "votes") %>%
+  pivot_longer(cols = VVD:Modern.Nederland, names_to = "party", values_to = "votes") %>%
   select(party, votes) %>% 
   group_by(party) %>% 
   summarise(votes=sum(votes))
@@ -139,7 +139,7 @@ Now let's have a look at what it would look like under **First-past-the-Post (FP
 
 #sort in long format
 df_long <- df_results %>% 
-  pivot_longer(cols = VVD:Vrije.Democratische.Partij..VDP., names_to = "party", values_to = "votes") %>%
+  pivot_longer(cols = VVD:Modern.Nederland, names_to = "party", values_to = "votes") %>%
   select(regio =RegioNaam, code = RegioCode,party, votes) %>% 
   filter(!is.na(votes)) %>% 
   group_by(code) %>% 
@@ -197,7 +197,7 @@ We can also show these results on a map - this in an interactive map which allow
 ```{r interactive_map, echo=FALSE, layout = "l-screen-inset"}
 #sort in long format
 df_pie <- df_results %>% 
-  pivot_longer(cols = VVD:Vrije.Democratische.Partij..VDP., names_to = "party", values_to = "votes") %>%
+  pivot_longer(cols = VVD:Modern.Nederland, names_to = "party", values_to = "votes") %>%
   select(regio =RegioNaam, code = RegioCode,party, votes) %>% 
   filter(!is.na(votes)) %>% 
   group_by(code) %>% 
