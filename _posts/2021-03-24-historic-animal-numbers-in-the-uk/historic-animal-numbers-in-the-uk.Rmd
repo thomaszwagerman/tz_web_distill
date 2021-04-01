@@ -13,6 +13,9 @@ preview: preview_animals.jpg
 output:
   distill::distill_article:
     self_contained: false
+categories:
+  - agricultural
+  - livestock
 ---
 
 

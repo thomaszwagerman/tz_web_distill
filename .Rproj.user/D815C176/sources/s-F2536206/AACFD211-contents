@@ -5,6 +5,9 @@ description: |
 output_dir: "_site"
 theme: theme.css
 navbar:
+  logo:
+    image: logo.png
+    href: https://tzwagerman.netlify.app/
   right:
     - text: "Home"
       href: index.html

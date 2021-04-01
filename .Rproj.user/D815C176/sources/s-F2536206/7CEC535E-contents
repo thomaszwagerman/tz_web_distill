@@ -11,6 +11,8 @@ date: 03-24-2021
 output:
   distill::distill_article:
         self_contained: false
+        code_folding: true
+        toc: true
 categories:
   - politics
   - mapview
@@ -109,7 +111,7 @@ df_pr$seats<- dHondt(df_pr$votes,df_pr$party,150)
 df_pr <- df_pr %>% 
   filter(seats>0) %>% 
   as.data.frame()
-df_pr <- df_pr[order(df_pr$seats,decreasing =T),] 
+df_pr <- df_pr[order(df_pr$votes,decreasing =T),] 
 df_pr <- left_join(df_pr,colourscheme)
 
 df_pr$total <- sum(df_pr$votes)
