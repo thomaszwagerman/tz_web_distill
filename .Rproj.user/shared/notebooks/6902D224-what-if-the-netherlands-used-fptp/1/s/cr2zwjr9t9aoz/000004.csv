@@ -1,23 +1,80 @@
 "0","library(dplyr)"
+"2","package ‘dplyr’ was built under R version 4.0.3"
+"2","
+Attaching package: ‘dplyr’
+
+"
+"2","The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+"
+"2","The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+"
 "0","library(tidyr)"
 "0","library(sf)"
 "0","library(ggplot2)"
+"2","package ‘ggplot2’ was built under R version 4.0.3"
 "0","library(ggiraph)"
+"2","package ‘ggiraph’ was built under R version 4.0.3"
+"2","Registered S3 method overwritten by 'htmlwidgets':
+  method           from         
+  print.htmlwidget tools:rstudio
+"
 "0","library(widgetframe)"
+"2","package ‘widgetframe’ was built under R version 4.0.4"
+"2","Loading required package: htmlwidgets
+"
+"2","package ‘htmlwidgets’ was built under R version 4.0.4"
 "0","library(knitr)"
 "0","library(plotly)"
+"2","package ‘plotly’ was built under R version 4.0.4"
+"2","Registered S3 method overwritten by 'data.table':
+  method           from
+  print.data.table     
+"
+"2","
+Attaching package: ‘plotly’
+
+"
+"2","The following object is masked from ‘package:ggplot2’:
+
+    last_plot
+
+"
+"2","The following object is masked from ‘package:httr’:
+
+    config
+
+"
+"2","The following object is masked from ‘package:stats’:
+
+    filter
+
+"
+"2","The following object is masked from ‘package:graphics’:
+
+    layout
+
+"
 "0","library(ggpol)"
+"2","package ‘ggpol’ was built under R version 4.0.4"
 "0","library(mapview)"
 "0","library(leafpop)"
+"2","package ‘leafpop’ was built under R version 4.0.4"
 "0","library(leaflet)"
+"2","package ‘leaflet’ was built under R version 4.0.4"
 "0","df_results <- read.csv(""Uitslag_alle_gemeenten_TK20210317.csv"", sep="";"")"
-"0","shp_gemeentes <- st_read(""Gemeentegrenzen_2021/Gemeentegrenzen_2021.shp"")"
+"0","shp_gemeentes <- st_read(""https://services.arcgis.com/nSZVuSZjHpEZZbRo/arcgis/rest/services/Gemeentegrenzen_2021/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json"")"
 "1","Reading layer `"
-"1","Gemeentegrenzen_2021"
+"1","ESRIJSON"
 "1","' from data source `"
-"1","C:\Users\thowag\Documents\tz_web_distill\_posts\2021-03-24-what-if-the-netherlands-used-fptp\Gemeentegrenzen_2021\Gemeentegrenzen_2021.shp"
+"1","https://services.arcgis.com/nSZVuSZjHpEZZbRo/arcgis/rest/services/Gemeentegrenzen_2021/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json"
 "1","' using driver `"
-"1","ESRI Shapefile"
+"1","ESRIJSON"
 "1","'"
 "1","
 "

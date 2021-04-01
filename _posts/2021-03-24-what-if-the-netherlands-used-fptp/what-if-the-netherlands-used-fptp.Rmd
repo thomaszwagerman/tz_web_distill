@@ -50,7 +50,7 @@ library(mapview)
 library(leafpop)
 library(leaflet)
 df_results <- read.csv("Uitslag_alle_gemeenten_TK20210317.csv", sep=";")
-shp_gemeentes <- st_read("Gemeentegrenzen_2021/Gemeentegrenzen_2021.shp")
+shp_gemeentes <- st_read("https://services.arcgis.com/nSZVuSZjHpEZZbRo/arcgis/rest/services/Gemeentegrenzen_2021/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json")
 shp_gemeentes$Gemeenteco <- gsub("GM","",shp_gemeentes$Gemeenteco)
 colourscheme <- read.csv("partycolours.csv")
 ```
