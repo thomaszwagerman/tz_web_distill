@@ -5,14 +5,14 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "0",
+    "hash" : "3396292653",
     "id" : "A568793F",
-    "lastKnownWriteTime" : 1616597002,
-    "last_content_update" : 1616597002850,
+    "lastKnownWriteTime" : 1617297899,
+    "last_content_update" : 1617297899930,
     "path" : "~/tz_web_distill/publications.Rmd",
     "project_path" : "publications.Rmd",
     "properties" : {
-        "cursorPosition" : "30,99",
+        "cursorPosition" : "2,0",
         "scrollLine" : "0"
     },
     "read_only" : false,

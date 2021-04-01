@@ -1,7 +1,5 @@
 ---
 title: "Publications"
-description: |
-  My publications
 ---
 
 ```{r setup, include=FALSE}
