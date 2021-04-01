@@ -1,0 +1,8 @@
+"0","mapview(shp_fptp,
+        zcol = ""party"",
+        col.regions = shp_fptp$colour,
+        popup = popupGraph(pie_plot_list, width = 300,height =300))
+"
+"2","Error: 
+shp_fptp does not contain data 
+"

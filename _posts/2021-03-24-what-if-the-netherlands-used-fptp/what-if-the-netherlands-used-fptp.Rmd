@@ -251,7 +251,8 @@ pie_plot_list <- lapply(unique(df_pie$code), function(i) {
     theme(axis.line = element_blank(),
           axis.text = element_blank(),
           axis.ticks = element_blank(),
-          plot.title = element_text(hjust = 0.5, color = "black"))
+          plot.title = element_text(hjust = 0.5, color = "black"),
+          legend.position = "bottom")
 })
 
 #remove saba, st eustasius etc.
@@ -272,7 +273,7 @@ rownames(shp_fptp) <- 1:nrow(shp_fptp)
 mapview(shp_fptp,
         zcol = "party",
         col.regions = shp_fptp$colour,
-        popup = popupGraph(pie_plot_list))
+        popup = popupGraph(pie_plot_list, width = 450,height =300))
 
 ```
 
