@@ -1,7 +1,17 @@
 ---
-title: "About this blog"
+title: "Thomas Zwagerman"
+image: headshot.jpg
+links:
+  - label: LinkedIn
+    url: "https://www.linkedin.com/in/thomaszwagerman/"
+  - label: Twitter
+    url: "https://twitter.com/thomzwa"
+  - label: GitHub
+    url: "https://github.com/thomaszwagerman"
 description: |
   Some additional details about the blog
+output:
+  postcards::trestles
 ---
 
 ```{r setup, include=FALSE}
