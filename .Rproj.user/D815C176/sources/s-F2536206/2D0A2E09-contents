@@ -9,8 +9,8 @@ library(metathis)
 
 meta() %>%
   meta_social(
-    title = "TZ Spatial Data",
-    description = "TZ Spatial Data",
+    title = "Thomas Zwagerman",
+    description = "Thomas Zwagerman",
     url = "https://tz-spatial.netlify.app/",
     image = "https://twitter.com/thomzwa/photo",
     image_alt = "testingtesting",
