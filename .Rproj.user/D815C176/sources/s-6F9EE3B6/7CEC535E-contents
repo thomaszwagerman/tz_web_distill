@@ -203,7 +203,14 @@ df_pie <- df_results %>%
   filter(!is.na(votes)) %>% 
   group_by(code) %>% 
   mutate(total = sum(votes)) 
+df_pie$code <- gsub("G","",df_pie$code)
 
+names_df <- unique(df_pie$code)
+names_shp <- unique(shp_gemeentes$Gemeenteco)
+names_remove <- names_df[!names_df %in% names_shp]
+#remove Bonaire, Saba, Sint Eustasius
+df_pie <- df_pie %>% 
+  filter(!code %in% names_remove)
 df_pie$percentage <- (df_pie$votes/df_pie$total)*100
 df_pie$percentage <- round(df_pie$percentage,1)
 # 
@@ -221,11 +228,11 @@ df_pie$party <- as.factor(df_pie$party)
 df_pie$party <- as.character(df_pie$party)
 df_pie$percentage <- as.numeric(df_pie$percentage)
 
-pie_plot_list <- lapply(unique(df_pie$regio), function(i) {
+pie_plot_list <- lapply(unique(df_pie$code), function(i) {
   regio_df <- df_pie %>% 
-    filter(regio == i) %>%
+    filter(code == i) %>%
     dplyr::ungroup() %>% 
-    select(party,percentage) %>%
+    select(party,percentage,regio) %>%
     filter(percentage >0.1) %>% 
     as.data.frame()
   regio_df <- regio_df[order(regio_df$percentage,decreasing = T),]
@@ -237,7 +244,7 @@ pie_plot_list <- lapply(unique(df_pie$regio), function(i) {
     #geom_text(aes(x = "", y = pct, label = percent(pct)), position = position_stack(vjust = 0.5))+
     coord_polar("y", start = 0) +
     labs(x = NULL, y = NULL, fill = NULL, 
-         title = paste("Verkiezingsuitslag",i)) +
+         title = paste("Verkiezingsuitslag",unique(regio_df$regio))) +
     theme_classic()+
     scale_fill_manual(values = regio_df$colour, 
                       limits = regio_df$party)+ 
@@ -246,6 +253,10 @@ pie_plot_list <- lapply(unique(df_pie$regio), function(i) {
           axis.ticks = element_blank(),
           plot.title = element_text(hjust = 0.5, color = "black"))
 })
+
+#remove saba, st eustasius etc.
+df_long <- df_long %>% 
+  filter(!code %in% names_remove)
 
 #link to spatial
 shp_fptp <- left_join(shp_gemeentes, df_long, by = c("Gemeenteco"="code"))
