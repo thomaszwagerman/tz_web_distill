@@ -254,9 +254,10 @@ shp_fptp <- shp_fptp %>%
 #I need to make the shapefile alphabetical to match with the pie chart list
 #This means removing apostrophe's at 's-Gravenhage and 's-Hertogenbosch
 shp_fptp$Gemeentena <- gsub("'","",shp_gemeentes$Gemeentena)
-
+#reorder
 shp_fptp <- shp_fptp[order(shp_fptp$Gemeentena),]
-rownames(shp_fptp) <- NULL
+#reset rownumbers so they line up
+rownames(shp_fptp) <- 1:nrow(shp_fptp)
 mapview(shp_fptp,
         zcol = "party",
         col.regions = shp_fptp$colour,
