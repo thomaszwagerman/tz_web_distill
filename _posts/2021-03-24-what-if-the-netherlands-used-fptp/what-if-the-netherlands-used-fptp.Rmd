@@ -31,10 +31,10 @@ Photo by <a href="https://unsplash.com/@michaelfousert?utm_source=unsplash&utm_m
 
 In this short article I am exploring what the Dutch political landscape would look like if it operated under a **first-past-the-post (FPTP)** system.
 
-The election data for the Netherlands was downloaded from the [Kiesraad](https://www.verkiezingsuitslagen.nl/).
+The election data for the Netherlands was downloaded from the [Kiesraad](https://www.verkiezingsuitslagen.nl/). The shapefile was downloaded from [ESRI NL](https://hub.arcgis.com/datasets/esrinl-content::gemeentegrenzen-2021?geometry=-5.140%2C50.969%2C15.767%2C53.328).
 
-# Results Tweede Kamer Verkiezing 2017
-These are the 2017 results summarised:
+# Results Tweede Kamer Verkiezing 2021
+These are the 2021 results summarised:
 
 ```{r reading_files, include=FALSE}
 library(dplyr)
@@ -50,7 +50,8 @@ library(mapview)
 library(leafpop)
 library(leaflet)
 df_results <- read.csv("Uitslag_alle_gemeenten_TK20210317.csv", sep=";")
-shp_gemeentes <- st_read("Gemeentegrenzen_2019-shp/Gemeentegrenzen__voorlopig____kustlijn.shp")
+shp_gemeentes <- st_read("Gemeentegrenzen_2021/Gemeentegrenzen_2021.shp")
+shp_gemeentes$Gemeenteco <- gsub("GM","",shp_gemeentes$Gemeenteco)
 colourscheme <- read.csv("partycolours.csv")
 ```
 
@@ -247,11 +248,15 @@ pie_plot_list <- lapply(unique(df_pie$regio), function(i) {
 })
 
 #link to spatial
-shp_fptp <- left_join(shp_gemeentes, df_long, by = c("Code"="code")) %>% 
-  select(-FID,Code,-Gemeentena,-Gemeenteco)
+shp_fptp <- left_join(shp_gemeentes, df_long, by = c("Gemeenteco"="code"))
 shp_fptp <- shp_fptp %>% 
   filter(percentage >0.1)
+#I need to make the shapefile alphabetical to match with the pie chart list
+#This means removing apostrophe's at 's-Gravenhage and 's-Hertogenbosch
+shp_fptp$Gemeentena <- gsub("'","",shp_gemeentes$Gemeentena)
 
+shp_fptp <- shp_fptp[order(shp_fptp$Gemeentena),]
+rownames(shp_fptp) <- NULL
 mapview(shp_fptp,
         zcol = "party",
         col.regions = shp_fptp$colour,
