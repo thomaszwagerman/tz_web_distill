@@ -124,9 +124,11 @@ kable(resultaat)
 
 ```
 
+# Visualising parliament using ggpol
 Let's start with examining the composition of the Tweede Kamer - under a **proportional representation (D'Hondt)** system. This is what the Tweede Kamer looks like currently:
 
 ```{r pr_graph, echo=FALSE}
+#plot proportional table with ggpol's geom_parliament.
 ggplot(df_pr) +
   ggpol::geom_parliament(aes(seats = seats, fill = party),color="black") + 
   #highlight the party in control of the House with a black line
@@ -149,12 +151,12 @@ df_long <- df_results %>%
   mutate(total = sum(votes)) %>% 
   slice_max(votes)
 
+#convert to percentage, round and remove the G from the codes to match up
 df_long$percentage <- (df_long$votes/df_long$total)*100
 df_long$percentage <- round(df_long$percentage,1)
-
 df_long$code <- gsub("G","",df_long$code)
 
-#fix the names
+#fix the names to acronyms for consistency
 df_long$party <- gsub("Partij.van.de.Arbeid..P.v.d.A..","PvdA",df_long$party)
 df_long$party <- gsub("Democraten.66..D66.","D66",df_long$party)
 df_long$party <- gsub("X50PLUS","Partij 50PLUS",df_long$party)
@@ -165,15 +167,18 @@ df_long$party <- gsub("PVV..Partij.voor.de.Vrijheid.","PVV",df_long$party)
 df_long$party <- gsub("Staatkundig.Gereformeerde.Partij..SGP.","SGP",df_long$party)
 df_long$party <- gsub("Partij.voor.de.Dieren","PvdD",df_long$party)
 df_long$party <- as.factor(df_long$party)
+#tidy up region names to exclude -'s and 's
 df_long$regio <- gsub("'","",df_long$regio)
 df_long$regio <- gsub("-"," ",df_long$regio)
+#join names with corresponding colour scheme
 df_long <- left_join(df_long,colourscheme)
 
-
+#Tabulate the results in order to get a seat tally by party
 fptp_results <- table(df_long$party) %>% as.data.frame()
 colnames(fptp_results) <- c("party","seats")
 fptp_results <- left_join(fptp_results,colourscheme)
 
+#use geom_parliament from ggpol to visualise
 ggplot(fptp_results) +
   ggpol::geom_parliament(aes(seats = seats, fill = party),color="black") + 
   #highlight the party in control of the House with a black line
@@ -198,6 +203,7 @@ But also some obvious caveats:
 We can also show these results on a map - this in an interactive map which allows you to explore the individual election results for each Gemeente.
 
 ```{r interactive_map, echo=FALSE, layout = "l-screen-inset"}
+#Prepare data for results per gemeente
 #sort in long format
 df_pie <- df_results %>% 
   pivot_longer(cols = VVD:Modern.Nederland, names_to = "party", values_to = "votes") %>%
@@ -207,15 +213,20 @@ df_pie <- df_results %>%
   mutate(total = sum(votes)) 
 df_pie$code <- gsub("G","",df_pie$code)
 
+#bit of code to automatically remove the gemeentes that can be found in the results, but not on the map.
+#these are the gemeentes Bonaire, Saba and Sint Eustasius which are in the Caribbean.
 names_df <- unique(df_pie$code)
 names_shp <- unique(shp_gemeentes$Gemeenteco)
 names_remove <- names_df[!names_df %in% names_shp]
 #remove Bonaire, Saba, Sint Eustasius
 df_pie <- df_pie %>% 
   filter(!code %in% names_remove)
+#round percentages 
 df_pie$percentage <- (df_pie$votes/df_pie$total)*100
 df_pie$percentage <- round(df_pie$percentage,1)
-# 
+
+#change name acronyms
+#this step is being repeated, initially seperate script - move up to first chunk?
 df_pie$party <- gsub("Partij.van.de.Arbeid..P.v.d.A..","PvdA",df_pie$party)
 df_pie$party <- gsub("Democraten.66..D66.","D66",df_pie$party)
 df_pie$party <- gsub("X50PLUS","Partij 50PLUS",df_pie$party)
@@ -230,16 +241,21 @@ df_pie$party <- as.factor(df_pie$party)
 df_pie$party <- as.character(df_pie$party)
 df_pie$percentage <- as.numeric(df_pie$percentage)
 
+#make a list of pie chart plots, in the order of code - this way it will correspond with the rows in the shapefile.
 pie_plot_list <- lapply(unique(df_pie$code), function(i) {
+  #filter and group info per gemeente code
   regio_df <- df_pie %>% 
     filter(code == i) %>%
     dplyr::ungroup() %>% 
     select(party,percentage,regio) %>%
     filter(percentage >0.1) %>% 
     as.data.frame()
+  #order by the vote tally 
   regio_df <- regio_df[order(regio_df$percentage,decreasing = T),]
+  #rejoin with the colourscheme
   regio_df <- left_join(regio_df,colourscheme)
   
+  #plot as a bar chart, important to paste the corresponding gemeente name
   ggplot(regio_df) +
     geom_bar(aes(x = "", y = percentage, fill = party),
              stat = "identity", colour = "black", width =1) +
@@ -272,6 +288,7 @@ shp_fptp$Gemeentena <- gsub("'","",shp_gemeentes$Gemeentena)
 shp_fptp <- shp_fptp[order(shp_fptp$Gemeentena),]
 #reset rownumbers so they line up
 rownames(shp_fptp) <- 1:nrow(shp_fptp)
+#use mapview to display colour by party, add popupgrah which refers to the list of pie charts made earlier.
 mapview(shp_fptp,
         zcol = "party",
         col.regions = shp_fptp$colour,
@@ -279,6 +296,6 @@ mapview(shp_fptp,
 
 ```
 
-
+Clicking on each gemeente will display a pie chart with its individual results. Some geographical patterns to note is that the Christian parties (SGP, CU) tend to do well in the so-called "bible-belt". More Liberal and Green parties (D66, GroenLinks) perform well in the big cities. In rural areas where agriculture is an important industry, the CDA is a popular choice. The populist right-wing party, the PVV, does well on the fringes of the Netherlands - far from the centre of power where trust in politics is low.
 
 
