@@ -1,0 +1,35 @@
+---
+title: "Thomas Zwagerman"
+image: headshot.jpg
+links:
+  - label: LinkedIn
+    url: "https://www.linkedin.com/in/thomaszwagerman/"
+  - label: Twitter
+    url: "https://twitter.com/thomzwa"
+  - label: GitHub
+    url: "https://github.com/thomaszwagerman"
+description: |
+  Some additional details about the blog
+output:
+  postcards::trestles
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+I work as a **Spatial Data Analyst** at the [Centre for Ecology and Hydrology](https://www.ceh.ac.uk/) in the group Emissions, Sources, Sinks and Solutions.
+
+I work on a range of national and international projects, mainly doing spatial modelling of emissions and air pollutants, with a focus on ammonia and nitrogen from agriculture. 
+
+_Skills & Experience:_
+
+* Storage, manipulation and visualisation of geospatial and environmental data in R.
+* ArcGIS & QGIS.
+* Database management with FME, SQL, Oracle & Access.
+* Development and maintenance of interactive R Shiny web applications.
+* Report writing and distribution of data with R Markdown.
+
+I have a **BSc in Ecological & Environmental Sciences** from the University of Edinburgh. I wrote my dissertation on vegetation change impact on arctic land-atmosphere interactions and snowmelt in the Arctic, and coded with a mix of Python and R. I was awarded the J.A More Memorial Prize for best dissertation on a plant or crop topic.
+ 
+My first stepts in R coding were at the [Coding Club](https://ourcodingclub.github.io/). I learned most of my spatial R from [Geocomputation with R by Robin Lovelace](https://geocompr.robinlovelace.net/). Now I get to teach as an instructor on [Transforming Environmental Data in R](https://www.ceh.ac.uk/training/transforming-environmental-data-r).

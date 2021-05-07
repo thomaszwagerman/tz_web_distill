@@ -292,7 +292,9 @@ rownames(shp_fptp) <- 1:nrow(shp_fptp)
 mapview(shp_fptp,
         zcol = "party",
         col.regions = shp_fptp$colour,
-        popup = popupGraph(pie_plot_list, width = 450,height =300))
+        popup = popupGraph(pie_plot_list, width = 450,height =300,),
+        legend = TRUE,
+        layer.name = "Party")
 
 ```
 

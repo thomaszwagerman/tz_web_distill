@@ -1,0 +1,47 @@
+"0","#Libraries----"
+"0","library(sf)"
+"0","library(readxl)"
+"0","library(dplyr)"
+"0","library(tidyr)"
+"0","library(mapview)"
+"0","library(leaflet)"
+"0","library(leafpop)"
+"0","library(ggplot2)"
+"0","library(knitr)"
+"0","library(scales)"
+"0",""
+"0","#Read in the files=----"
+"0","constituency_shp<-st_read(""Scottish_Parliamentary_Constituencies_(May_2016)_Boundaries.shp"")"
+"1","Reading layer `"
+"1","Scottish_Parliamentary_Constituencies_(May_2016)_Boundaries"
+"1","' from data source `"
+"1","C:\Users\thowag\Documents\tz_web_distill\_posts\2021-05-07-interactivemappingofsp2021\Scottish_Parliamentary_Constituencies_(May_2016)_Boundaries.shp"
+"1","' using driver `"
+"1","ESRI Shapefile"
+"1","'"
+"1","
+"
+"1","Simple feature collection with 73 features and 5 fields"
+"1","
+"
+"1","geometry type:  MULTIPOLYGON
+"
+"1","dimension:      XY
+"
+"1","bbox:           "
+"1","xmin: 5512.999 ymin: 530249 xmax: 470332 ymax: 1220302"
+"1","
+"
+"1","projected CRS:  OSGB 1936 / British National Grid
+"
+"0","results_df <- read_excel(""Electoral-Data-Results-May-2016-Scottish-Parliament-elections.xls"", "
+"0","                         sheet = 'Constituencies - Results',"
+"0","                         range = 'A2:AA75')"
+"2","New names:
+* CON -> CON...10
+* LAB -> LAB...11
+* LIB -> LIB...12
+* SNP -> SNP...13
+* IND -> IND...14
+* ...
+"
