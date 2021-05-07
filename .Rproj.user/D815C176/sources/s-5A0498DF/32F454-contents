@@ -10,6 +10,10 @@ library(ggplot2)
 
 #Read in the files=----
 constituency_shp<-st_read("C:\\Users\\thowag\\Desktop\\ge_scot_2021\\Scottish_Parliamentary_Constituencies_(May_2016)_Boundaries.shp")
+constituency_shp <- constituency_shp %>% 
+  select(spc16cd,spc16nm)
+constituency_shp <- gSimplify(constituency_shp, tol =10)
+
 region_shp<-st_read("C:\\Users\\thowag\\Desktop\\ge_scot_2021\\scotparl_regions_2016.shp")
 results_df <- read_excel("C:\\Users\\thowag\\Desktop\\ge_scot_2021\\Electoral-Data-Results-May-2016-Scottish-Parliament-elections.xls", 
                          sheet = 'Constituencies - Results',
