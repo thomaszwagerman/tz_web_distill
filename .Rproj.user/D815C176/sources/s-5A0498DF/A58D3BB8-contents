@@ -83,14 +83,14 @@ This is what the "winner" dataset looks like:
 kable(head(winner_df))
 ```
 
-And this is the what the dataset of the voteshare looks like:
+And this is the what the dataset of the vote share looks like:
 
 ```{r vote_share_df, echo = FALSE}
 kable(head(voteshare_df))
 
 ```
 
-I'm also creating a dataframe with colour codes associated with each party (these can be found on a [wikipedia index](https://en.wikipedia.org/wiki/Wikipedia:Index_of_United_Kingdom_political_parties_meta_attributes)). When I join the colour codes to our shapefile later on, it means I don't have to manually set any colours! 
+I'm also creating a dataframe with colour codes associated with each party (these can be found on a very useful [wikipedia index](https://en.wikipedia.org/wiki/Wikipedia:Index_of_United_Kingdom_political_parties_meta_attributes)). When I join the colour codes to our shapefile later on, it means I don't have to manually set any colours! 
 
 ```{r colour_codes, echo=FALSE}
 #Create a colour code df based on the unique parties
