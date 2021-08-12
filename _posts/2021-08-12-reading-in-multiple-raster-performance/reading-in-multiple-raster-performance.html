@@ -1483,74 +1483,37 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <p>Let’s get started with the method I used in my project, and then we’ll try some improvements from there!</p>
 <h1 id="a-look-at-the-files-to-process">A look at the files to process</h1>
 <div class="layout-chunk" data-layout="l-body">
-<pre><code>[1] 300</code></pre>
+
 </div>
 <p>A pretty chunky folder - let’s have a look at the different methods of reading in multiply raster files.</p>
 <h1 id="the-methods">The methods</h1>
+<p>The first method is the one I used during my project, which is stack(). The reason I went for stack() is that it’s probably the most concise method of stacking a large number of rasters, because you read the raster files straight into a stack. But… I had a feeling this was maybe taking more time than I’d like.</p>
 <div class="layout-chunk" data-layout="l-body">
-<pre><code>class      : RasterStack 
-dimensions : 1300, 700, 910000, 3  (nrow, ncol, ncell, nlayers)
-resolution : 1000, 1000  (x, y)
-extent     : 0, 7e+05, 0, 1300000  (xmin, xmax, ymin, ymax)
-crs        : +proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +a=6377563.396 +rf=299.324975315035 +units=m +no_defs 
-names      : r_crop_1750_pc_1km, r_crop_1760_pc_1km, r_crop_1770_pc_1km 
-min values :               0.01,               0.01,               0.01 
-max values :               0.99,               0.99,               0.99 </code></pre>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/utils/stack.html'>stack</a></span><span class='op'>(</span><span class='va'>l_files</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span><span class='op'>]</span><span class='op'>)</span>
+</code></pre>
+</div>
 </div>
 <p>A method I was curious about after reading <a href="https://csgillespie.github.io/efficientR/programming.html#the-apply-family">Chapter 3 of Efficient R programming</a> by Colin Gillespie and Robin Lovelace, is whether maybe using lapply to individually reading in rasters into a list, and then stacking them is faster than reading in the rasters into a stack straight away.</p>
-<p>So let’s try that method, which looks like this:</p>
+<p>Of course, that is multiple functions, so to make it work within microbenchmark, I’m defining it into a single function here. Normally I probably wouldn’t bother doing that.</p>
 <div class="layout-chunk" data-layout="l-body">
-<pre><code>[[1]]
-class      : RasterLayer 
-dimensions : 1300, 700, 910000  (nrow, ncol, ncell)
-resolution : 1000, 1000  (x, y)
-extent     : 0, 7e+05, 0, 1300000  (xmin, xmax, ymin, ymax)
-crs        : +proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +a=6377563.396 +rf=299.324975315035 +units=m +no_defs 
-source     : //nerclactdb.adceh.ceh.ac.uk/Projects/PROJECTS1/SPEED_Metal/Atmos_inputs/Land_Use/BELUC_outputs/run8/output_agg_1km/r_crop_1750_pc_1km.tif 
-names      : r_crop_1750_pc_1km 
-values     : 0.01, 0.99  (min, max)
-
-
-[[2]]
-class      : RasterLayer 
-dimensions : 1300, 700, 910000  (nrow, ncol, ncell)
-resolution : 1000, 1000  (x, y)
-extent     : 0, 7e+05, 0, 1300000  (xmin, xmax, ymin, ymax)
-crs        : +proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +a=6377563.396 +rf=299.324975315035 +units=m +no_defs 
-source     : //nerclactdb.adceh.ceh.ac.uk/Projects/PROJECTS1/SPEED_Metal/Atmos_inputs/Land_Use/BELUC_outputs/run8/output_agg_1km/r_crop_1760_pc_1km.tif 
-names      : r_crop_1760_pc_1km 
-values     : 0.01, 0.99  (min, max)
-
-
-[[3]]
-class      : RasterLayer 
-dimensions : 1300, 700, 910000  (nrow, ncol, ncell)
-resolution : 1000, 1000  (x, y)
-extent     : 0, 7e+05, 0, 1300000  (xmin, xmax, ymin, ymax)
-crs        : +proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +a=6377563.396 +rf=299.324975315035 +units=m +no_defs 
-source     : //nerclactdb.adceh.ceh.ac.uk/Projects/PROJECTS1/SPEED_Metal/Atmos_inputs/Land_Use/BELUC_outputs/run8/output_agg_1km/r_crop_1770_pc_1km.tif 
-names      : r_crop_1770_pc_1km 
-values     : 0.01, 0.99  (min, max)</code></pre>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>func_apply_n_stack</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>files_to_read</span><span class='op'>)</span><span class='op'>{</span>
+<span class='co'>#reading the rasters in individually, into a list object</span>
+<span class='va'>l_rasters</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>files_to_read</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span><span class='op'>]</span>, <span class='va'>raster</span><span class='op'>)</span>
+<span class='co'>#then stack the read in list object into a single stack</span>
+<span class='va'>s_rasters</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/utils/stack.html'>stack</a></span><span class='op'>(</span><span class='va'>l_rasters</span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/function.html'>return</a></span><span class='op'>(</span><span class='va'>s_rasters</span><span class='op'>)</span>
+<span class='op'>}</span>
+</code></pre>
+</div>
 </div>
 <p>Another package I’ve been curious about for a while, but haven’t found an excuse to use yet, is <a href="https://r-spatial.github.io/stars/">stars</a>. Now I have no idea how this works in the background, so I have no idea if this will be faster, but that’s the fun of the experiment.</p>
 <div class="layout-chunk" data-layout="l-body">
-<pre><code>stars object with 2 dimensions and 3 attributes
-attribute(s):
-                        Min. 1st Qu. Median      Mean 3rd Qu. Max.
-r_crop_1750_pc_1km.tif  0.01    0.07   0.23 0.2432115    0.38 0.99
-r_crop_1760_pc_1km.tif  0.01    0.07   0.23 0.2434995    0.38 0.99
-r_crop_1770_pc_1km.tif  0.01    0.07   0.23 0.2438948    0.38 0.99
-                          NA&#39;s
-r_crop_1750_pc_1km.tif  707217
-r_crop_1760_pc_1km.tif  706998
-r_crop_1770_pc_1km.tif  706873
-dimension(s):
-  from   to  offset delta                       refsys point values
-x    1  700       0  1000 +proj=tmerc +lat_0=49 +lo... FALSE   NULL
-y    1 1300 1300000 -1000 +proj=tmerc +lat_0=49 +lo... FALSE   NULL
-  x/y
-x [x]
-y [y]</code></pre>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'>read_stars</span><span class='op'>(</span><span class='va'>l_files</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span><span class='op'>]</span><span class='op'>)</span>
+</code></pre>
+</div>
 </div>
 <h1 id="running-the-benchmark">Running the benchmark</h1>
 <p>Now I’ve given a sample of the 3 methods, let’s run the benchmark and see which is fastest.</p>
@@ -1559,129 +1522,45 @@ y [y]</code></pre>
 <thead>
 <tr class="header">
 <th style="text-align: left;">expr</th>
-<th style="text-align: right;">time</th>
+<th style="text-align: right;">min</th>
+<th style="text-align: right;">lq</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">median</th>
+<th style="text-align: right;">uq</th>
+<th style="text-align: right;">max</th>
+<th style="text-align: right;">neval</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">lapply_method</td>
-<td style="text-align: right;">6197967301</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">stars_method</td>
-<td style="text-align: right;">3282143201</td>
-</tr>
-<tr class="odd">
 <td style="text-align: left;">stack_method</td>
-<td style="text-align: right;">5575167601</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">stack_method</td>
-<td style="text-align: right;">5725858701</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">lapply_method</td>
-<td style="text-align: right;">4294378401</td>
+<td style="text-align: right;">5.477365</td>
+<td style="text-align: right;">5.673873</td>
+<td style="text-align: right;">5.785959</td>
+<td style="text-align: right;">5.780988</td>
+<td style="text-align: right;">5.870214</td>
+<td style="text-align: right;">6.082241</td>
+<td style="text-align: right;">10</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">lapply_method</td>
-<td style="text-align: right;">4219017402</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">lapply_method</td>
-<td style="text-align: right;">4439714701</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">lapply_method</td>
-<td style="text-align: right;">4133391101</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">stars_method</td>
-<td style="text-align: right;">3258915201</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">stack_method</td>
-<td style="text-align: right;">5618879301</td>
+<td style="text-align: right;">4.145744</td>
+<td style="text-align: right;">4.157930</td>
+<td style="text-align: right;">4.361981</td>
+<td style="text-align: right;">4.346606</td>
+<td style="text-align: right;">4.467269</td>
+<td style="text-align: right;">4.862596</td>
+<td style="text-align: right;">10</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">stars_method</td>
-<td style="text-align: right;">3267944001</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">stack_method</td>
-<td style="text-align: right;">5843097401</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">stack_method</td>
-<td style="text-align: right;">5735718201</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">stack_method</td>
-<td style="text-align: right;">5610885401</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">lapply_method</td>
-<td style="text-align: right;">4354303701</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">stars_method</td>
-<td style="text-align: right;">5071548900</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">stack_method</td>
-<td style="text-align: right;">7052678101</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">lapply_method</td>
-<td style="text-align: right;">5315994501</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">stars_method</td>
-<td style="text-align: right;">4607615901</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">stack_method</td>
-<td style="text-align: right;">7468117401</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">stars_method</td>
-<td style="text-align: right;">4089055501</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">stars_method</td>
-<td style="text-align: right;">4113425301</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">lapply_method</td>
-<td style="text-align: right;">5164724501</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">stack_method</td>
-<td style="text-align: right;">6809496901</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">stars_method</td>
-<td style="text-align: right;">4012487101</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">lapply_method</td>
-<td style="text-align: right;">4930895501</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">stars_method</td>
-<td style="text-align: right;">4080462101</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">stack_method</td>
-<td style="text-align: right;">7629687801</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">stars_method</td>
-<td style="text-align: right;">5044629801</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">lapply_method</td>
-<td style="text-align: right;">4542904102</td>
+<td style="text-align: right;">3.234831</td>
+<td style="text-align: right;">3.342583</td>
+<td style="text-align: right;">3.388981</td>
+<td style="text-align: right;">3.367211</td>
+<td style="text-align: right;">3.458902</td>
+<td style="text-align: right;">3.547657</td>
+<td style="text-align: right;">10</td>
 </tr>
 </tbody>
 </table>
@@ -1692,7 +1571,7 @@ y [y]</code></pre>
 <p><img src="reading-in-multiple-raster-performance_files/figure-html5/benchmark_plot-1.png" width="624" /></p>
 </div>
 <p>So lapply(x, raster) and read_stars() are definitely faster than stack() on average, but read_stars() and lapply(x, raster) do overlap a wee bit, so I could probably get away with using lapply until I learn to use stars properly… or is that another excuse I don’t need to put off learning stars?</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
 </div>
