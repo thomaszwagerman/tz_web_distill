@@ -31,6 +31,8 @@ Let's get started with the method I used in my project, and then we'll try some 
 
 # A look at the files to process
 
+I can't share the rasters I used for my project, so instead I'm working with a small dataset from the FAO, called [Gridded Livestock of the World](http://www.fao.org/livestock-systems/global-distributions/en/). Pretty much what it says on the tin, with different rasters for each animal type. It's a good dataset for this purpose as it's relatively lightweight and I already now all rasters are the same extent.
+
 ```{r directory_numbers, warning = FALSE, echo = FALSE, message=FALSE}
 #Libraries----
 library(tidyverse)
@@ -40,19 +42,21 @@ library(microbenchmark)
 library(stars)
 library(ggplot2)
 library(knitr)
+library(terra)
 
-lu_dir <- "//nerclactdb.adceh.ceh.ac.uk/Projects/PROJECTS1/SPEED_Metal/Atmos_inputs/Land_Use/BELUC_outputs/run8/output_agg_1km/"
+lu_dir <- "C:/Users/thowag/Documents/tz_web_distill/_posts/2021-08-12-reading-in-multiple-raster-performance/glw_rasters/"
+#lu_dir <- "/glw_rasters/"
 l_files <- list.files(lu_dir, pattern = ".tif")
 l_files <- paste0(lu_dir,l_files)
 ```
 
-A pretty chunky folder - let's have a look at the different methods of reading in multiply raster files.
+Now let's have a look at the different methods of reading in multiply raster files.
 
 # The methods
 The first method is the one I used during my project, which is stack(). The reason I went for stack() is that it's probably the most concise method of stacking a large number of rasters, because you read the raster files straight into a stack. But... I had a feeling this was maybe taking more time than I'd like.
 
 ```{r stack_method, warning = FALSE, echo = FALSE, message=FALSE, echo = TRUE, results=FALSE}
-stack(l_files[1:3])
+stack(l_files)
 ```
 
 A method I was curious about after reading [Chapter 3 of Efficient R programming](https://csgillespie.github.io/efficientR/programming.html#the-apply-family) by Colin Gillespie and Robin Lovelace, is whether maybe using lapply to individually reading in rasters into a list, and then stacking them is faster than reading in the rasters into a stack straight away.
@@ -60,9 +64,9 @@ A method I was curious about after reading [Chapter 3 of Efficient R programming
 Of course, that is multiple functions, so to make it work within microbenchmark, I'm defining it into a single function here. Normally I probably wouldn't bother doing that.
 
 ```{r lapply_method, warning = FALSE, message=FALSE, echo = TRUE, results=FALSE}
-func_apply_n_stack <- function(files_to_read){
+func_apply_n_raster <- function(files_to_read){
 #reading the rasters in individually, into a list object
-l_rasters <- lapply(files_to_read[1:3], raster)
+l_rasters <- lapply(files_to_read, raster)
 #then stack the read in list object into a single stack
 s_rasters <- stack(l_rasters)
 return(s_rasters)
@@ -72,18 +76,26 @@ return(s_rasters)
 Another package I've been curious about for a while, but haven't found an excuse to use yet, is [stars](https://r-spatial.github.io/stars/). Now I have no idea how this works in the background, so I have no idea if this will be faster, but that's the fun of the experiment.
 
 ```{r stars_method, warning = FALSE, message=FALSE, echo = TRUE, results=FALSE}
-read_stars(l_files[1:3])
+read_stars(l_files)
 ```
 
+Another new package is [terra](https://github.com/rspatial/terra) which is inteded to replace raster. Unlike raster, the rast() function in terra already reads in multiple rasters, so there's no need to write a function as we did for raster().
+
+```{r terra_method, warning = FALSE, message=FALSE, echo = TRUE, results=FALSE}
+rast(l_files)
+```
+
+
 # Running the benchmark
-Now I've given a sample of the 3 methods, let's run the benchmark and see which is fastest.
+Now I've given a sample of the 4 methods, let's run the benchmark and see which is fastest.
 
 ```{r benchmark, warning = FALSE, message=FALSE}
 res <- microbenchmark(
-  stack_method = stack(l_files[1:3]),
-  lapply_method = func_apply_n_stack(l_files[1:3]),
-  stars_method = read_stars(l_files[1:3]),
-  times = 10
+  stack = stack(l_files[1:3]),
+  lapply_and_raster = func_apply_n_raster(l_files[1:3]),
+  read_stars = read_stars(l_files[1:3]),
+  terra_rast = rast(l_files[1:3]),
+  times = 100
 )
 #the reason I'm passing a summary() function through to kable is that
 #kable (or any paged table function) doesn't provide expected output with a microbenchmark output

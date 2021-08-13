@@ -1,0 +1,7 @@
+"0","func_apply_n_raster <- function(files_to_read){"
+"0","#reading the rasters in individually, into a list object"
+"0","l_rasters <- lapply(files_to_read, raster)"
+"0","#then stack the read in list object into a single stack"
+"0","s_rasters <- stack(l_rasters)"
+"0","return(s_rasters)"
+"0","}"

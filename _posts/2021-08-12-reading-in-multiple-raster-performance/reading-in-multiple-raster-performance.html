@@ -114,7 +114,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--/radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-resource-manifest">
-  {"type":"character","attributes":{},"value":["reading-in-multiple-raster-performance_files/anchor-4.2.2/anchor.min.js","reading-in-multiple-raster-performance_files/bowser-1.9.3/bowser.min.js","reading-in-multiple-raster-performance_files/distill-2.2.21/template.v2.js","reading-in-multiple-raster-performance_files/figure-html5/benchmark_plot-1.png","reading-in-multiple-raster-performance_files/jquery-1.11.3/jquery.min.js","reading-in-multiple-raster-performance_files/popper-2.6.0/popper.min.js","reading-in-multiple-raster-performance_files/tippy-6.2.7/tippy-bundle.umd.min.js","reading-in-multiple-raster-performance_files/tippy-6.2.7/tippy-light-border.css","reading-in-multiple-raster-performance_files/tippy-6.2.7/tippy.css","reading-in-multiple-raster-performance_files/tippy-6.2.7/tippy.umd.min.js","reading-in-multiple-raster-performance_files/webcomponents-2.0.0/webcomponents.js"]}
+  {"type":"character","attributes":{},"value":["glw_rasters/5_Ct_2010_Da.tif","glw_rasters/5_Pg_2010_Da.tif","glw_rasters/5_Sh_2010_Da.tif","glw_rasters/6_Ct_2010_Aw.tif","glw_rasters/6_Pg_2010_Aw.tif","glw_rasters/6_Sh_2010_Aw.tif","reading-in-multiple-raster-performance_files/anchor-4.2.2/anchor.min.js","reading-in-multiple-raster-performance_files/bowser-1.9.3/bowser.min.js","reading-in-multiple-raster-performance_files/distill-2.2.21/template.v2.js","reading-in-multiple-raster-performance_files/figure-html5/benchmark_plot-1.png","reading-in-multiple-raster-performance_files/jquery-1.11.3/jquery.min.js","reading-in-multiple-raster-performance_files/popper-2.6.0/popper.min.js","reading-in-multiple-raster-performance_files/tippy-6.2.7/tippy-bundle.umd.min.js","reading-in-multiple-raster-performance_files/tippy-6.2.7/tippy-light-border.css","reading-in-multiple-raster-performance_files/tippy-6.2.7/tippy.css","reading-in-multiple-raster-performance_files/tippy-6.2.7/tippy.umd.min.js","reading-in-multiple-raster-performance_files/webcomponents-2.0.0/webcomponents.js"]}
   </script>
   <!--radix_placeholder_navigation_in_header-->
   <!--/radix_placeholder_navigation_in_header-->
@@ -1482,15 +1482,16 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <p>For that reason I thought I’d test some different ways of processing rasters, so that at least the upfront processing time for each re-run is minimised.</p>
 <p>Let’s get started with the method I used in my project, and then we’ll try some improvements from there!</p>
 <h1 id="a-look-at-the-files-to-process">A look at the files to process</h1>
+<p>I can’t share the rasters I used for my project, so instead I’m working with a small dataset from the FAO, called <a href="http://www.fao.org/livestock-systems/global-distributions/en/">Gridded Livestock of the World</a>. Pretty much what it says on the tin, with different rasters for each animal type. It’s a good dataset for this purpose as it’s relatively lightweight and I already now all rasters are the same extent.</p>
 <div class="layout-chunk" data-layout="l-body">
 
 </div>
-<p>A pretty chunky folder - let’s have a look at the different methods of reading in multiply raster files.</p>
+<p>Now let’s have a look at the different methods of reading in multiply raster files.</p>
 <h1 id="the-methods">The methods</h1>
 <p>The first method is the one I used during my project, which is stack(). The reason I went for stack() is that it’s probably the most concise method of stacking a large number of rasters, because you read the raster files straight into a stack. But… I had a feeling this was maybe taking more time than I’d like.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/utils/stack.html'>stack</a></span><span class='op'>(</span><span class='va'>l_files</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span><span class='op'>]</span><span class='op'>)</span>
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/utils/stack.html'>stack</a></span><span class='op'>(</span><span class='va'>l_files</span><span class='op'>)</span>
 </code></pre>
 </div>
 </div>
@@ -1498,9 +1499,9 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <p>Of course, that is multiple functions, so to make it work within microbenchmark, I’m defining it into a single function here. Normally I probably wouldn’t bother doing that.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>func_apply_n_stack</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>files_to_read</span><span class='op'>)</span><span class='op'>{</span>
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>func_apply_n_raster</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>files_to_read</span><span class='op'>)</span><span class='op'>{</span>
 <span class='co'>#reading the rasters in individually, into a list object</span>
-<span class='va'>l_rasters</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>files_to_read</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span><span class='op'>]</span>, <span class='va'>raster</span><span class='op'>)</span>
+<span class='va'>l_rasters</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>files_to_read</span>, <span class='va'>raster</span><span class='op'>)</span>
 <span class='co'>#then stack the read in list object into a single stack</span>
 <span class='va'>s_rasters</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/utils/stack.html'>stack</a></span><span class='op'>(</span><span class='va'>l_rasters</span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/function.html'>return</a></span><span class='op'>(</span><span class='va'>s_rasters</span><span class='op'>)</span>
@@ -1511,12 +1512,27 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <p>Another package I’ve been curious about for a while, but haven’t found an excuse to use yet, is <a href="https://r-spatial.github.io/stars/">stars</a>. Now I have no idea how this works in the background, so I have no idea if this will be faster, but that’s the fun of the experiment.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'>read_stars</span><span class='op'>(</span><span class='va'>l_files</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span><span class='op'>]</span><span class='op'>)</span>
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'>read_stars</span><span class='op'>(</span><span class='va'>l_files</span><span class='op'>)</span>
 </code></pre>
 </div>
 </div>
+<p>Another new package is <a href="https://github.com/rspatial/terra">terra</a> which is inteded to replace raster. Unlike raster, the rast() function in terra already reads in multiple rasters, so there’s no need to write a function as we did for raster().</p>
+<div class="layout-chunk" data-layout="l-body">
+<pre><code>class       : SpatRaster 
+dimensions  : 2160, 4320, 6  (nrow, ncol, nlyr)
+resolution  : 0.08333333, 0.08333333  (x, y)
+extent      : -180, 180, -90, 90  (xmin, xmax, ymin, ymax)
+coord. ref. : +proj=longlat +datum=WGS84 +no_defs 
+sources     : 5_Ct_2010_Da.tif  
+              5_Pg_2010_Da.tif  
+              5_Sh_2010_Da.tif  
+              ... and 3 more source(s)
+names       : 5_Ct_2010_Da, 5_Pg_2010_Da, 5_Sh_2010_Da, 6_Ct_2010_Aw, 6_Pg_2010_Aw, 6_Sh_2010_Aw 
+min values  :            0,            0,            0,            0,            0,            0 
+max values  :     328070.9,     411115.7,     344862.1,     194600.3,     215998.0,     917010.0 </code></pre>
+</div>
 <h1 id="running-the-benchmark">Running the benchmark</h1>
-<p>Now I’ve given a sample of the 3 methods, let’s run the benchmark and see which is fastest.</p>
+<p>Now I’ve given a sample of the 4 methods, let’s run the benchmark and see which is fastest.</p>
 <div class="layout-chunk" data-layout="l-body">
 <table>
 <thead>
@@ -1533,34 +1549,44 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">stack_method</td>
-<td style="text-align: right;">5.477365</td>
-<td style="text-align: right;">5.673873</td>
-<td style="text-align: right;">5.785959</td>
-<td style="text-align: right;">5.780988</td>
-<td style="text-align: right;">5.870214</td>
-<td style="text-align: right;">6.082241</td>
-<td style="text-align: right;">10</td>
+<td style="text-align: left;">stack</td>
+<td style="text-align: right;">68.2983</td>
+<td style="text-align: right;">74.19425</td>
+<td style="text-align: right;">79.517660</td>
+<td style="text-align: right;">77.01310</td>
+<td style="text-align: right;">81.81385</td>
+<td style="text-align: right;">154.6189</td>
+<td style="text-align: right;">100</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">lapply_method</td>
-<td style="text-align: right;">4.145744</td>
-<td style="text-align: right;">4.157930</td>
-<td style="text-align: right;">4.361981</td>
-<td style="text-align: right;">4.346606</td>
-<td style="text-align: right;">4.467269</td>
-<td style="text-align: right;">4.862596</td>
-<td style="text-align: right;">10</td>
+<td style="text-align: left;">lapply_and_raster</td>
+<td style="text-align: right;">52.3225</td>
+<td style="text-align: right;">56.47360</td>
+<td style="text-align: right;">59.912993</td>
+<td style="text-align: right;">58.38615</td>
+<td style="text-align: right;">61.68790</td>
+<td style="text-align: right;">99.9467</td>
+<td style="text-align: right;">100</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">stars_method</td>
-<td style="text-align: right;">3.234831</td>
-<td style="text-align: right;">3.342583</td>
-<td style="text-align: right;">3.388981</td>
-<td style="text-align: right;">3.367211</td>
-<td style="text-align: right;">3.458902</td>
-<td style="text-align: right;">3.547657</td>
-<td style="text-align: right;">10</td>
+<td style="text-align: left;">read_stars</td>
+<td style="text-align: right;">1144.9811</td>
+<td style="text-align: right;">1322.54880</td>
+<td style="text-align: right;">1362.230439</td>
+<td style="text-align: right;">1337.84315</td>
+<td style="text-align: right;">1356.80010</td>
+<td style="text-align: right;">2801.1100</td>
+<td style="text-align: right;">100</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">terra_rast</td>
+<td style="text-align: right;">7.3050</td>
+<td style="text-align: right;">8.35615</td>
+<td style="text-align: right;">9.491615</td>
+<td style="text-align: right;">8.85530</td>
+<td style="text-align: right;">10.14010</td>
+<td style="text-align: right;">26.2813</td>
+<td style="text-align: right;">100</td>
 </tr>
 </tbody>
 </table>
@@ -1571,7 +1597,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <p><img src="reading-in-multiple-raster-performance_files/figure-html5/benchmark_plot-1.png" width="624" /></p>
 </div>
 <p>So lapply(x, raster) and read_stars() are definitely faster than stack() on average, but read_stars() and lapply(x, raster) do overlap a wee bit, so I could probably get away with using lapply until I learn to use stars properly… or is that another excuse I don’t need to put off learning stars?</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
 </div>
