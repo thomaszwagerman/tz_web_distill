@@ -1,7 +1,7 @@
 ---
 title: "Reading in multiple raster performance."
 description: |
-  Comparing the performance of different methods to read in multiple raster files.
+  This is a short blog post where I test the performance of different methods to read in multiple rasters.
 draft: true
 author:
   - name: Thomas Zwagerman
@@ -10,14 +10,24 @@ date: 08-12-2021
 output:
   distill::distill_article:
     self_contained: false
+    toc: true
+categories:
+  - rspatial
+  - raster
+  - terra
+  - benchmark
 ---
-
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-This is a short blog post where I test the performance of different methods to read in multiple rasters.
+```{r preview,echo=FALSE}
+knitr::include_graphics("preview.jpg")
+```
+<aside>
+Photo by <a href="https://unsplash.com/@oskaryil?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Oskar Yildiz</a> on <a href="https://unsplash.com/s/photos/programming?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>
+</aside>
 
 # Efficiency
 
@@ -31,9 +41,9 @@ Let's get started with the method I used in my project, and then we'll try some 
 
 # A look at the files to process
 
-I can't share the rasters I used for my project, so instead I'm working with a small dataset from the FAO, called [Gridded Livestock of the World](http://www.fao.org/livestock-systems/global-distributions/en/). Pretty much what it says on the tin, with different rasters for each animal type. It's a good dataset for this purpose as it's relatively lightweight and I already now all rasters are the same extent.
+I can't share the rasters I used for my project, so instead I'm working with a small dataset from the FAO, called [Gridded Livestock of the World](http://www.fao.org/livestock-systems/global-distributions/en/). Pretty much what it says on the tin, with different rasters for each animal type. For example here is the raster for cattle: 
 
-```{r directory_numbers, warning = FALSE, echo = FALSE, message=FALSE}
+```{r directory_numbers, warning = FALSE, echo = FALSE, message=FALSE, code_folding =TRUE}
 #Libraries----
 library(tidyverse)
 library(raster)
@@ -48,18 +58,20 @@ lu_dir <- "C:/Users/thowag/Documents/tz_web_distill/_posts/2021-08-12-reading-in
 #lu_dir <- "/glw_rasters/"
 l_files <- list.files(lu_dir, pattern = ".tif")
 l_files <- paste0(lu_dir,l_files)
+p1 <- rast(l_files[1])
+plot(p1)
 ```
 
-Now let's have a look at the different methods of reading in multiply raster files.
+It's a good dataset for this purpose as it's relatively lightweight and I already know all rasters are the same extent. Now let's have a look at the different methods of reading in multiple raster files.
 
-# The methods
-The first method is the one I used during my project, which is stack(). The reason I went for stack() is that it's probably the most concise method of stacking a large number of rasters, because you read the raster files straight into a stack. But... I had a feeling this was maybe taking more time than I'd like.
+# The 4 methods
+The first method is the one I used during my project, which is **stack()**. The reason I went for **stack()** is that it's probably the most concise method of stacking a large number of rasters, because you read the raster files straight into a stack. But... I had a feeling this was maybe taking more time than I'd like.
 
 ```{r stack_method, warning = FALSE, echo = FALSE, message=FALSE, echo = TRUE, results=FALSE}
 stack(l_files)
 ```
 
-A method I was curious about after reading [Chapter 3 of Efficient R programming](https://csgillespie.github.io/efficientR/programming.html#the-apply-family) by Colin Gillespie and Robin Lovelace, is whether maybe using lapply to individually reading in rasters into a list, and then stacking them is faster than reading in the rasters into a stack straight away.
+A method I was curious about after reading [Chapter 3 of Efficient R programming](https://csgillespie.github.io/efficientR/programming.html#the-apply-family) by Colin Gillespie and Robin Lovelace, is whether using **lapply()** to individually reading in rasters into a list, and then stacking them is faster than reading in the rasters into a stack straight away.
 
 Of course, that is multiple functions, so to make it work within microbenchmark, I'm defining it into a single function here. Normally I probably wouldn't bother doing that.
 
@@ -73,13 +85,13 @@ return(s_rasters)
 }
 ```
 
-Another package I've been curious about for a while, but haven't found an excuse to use yet, is [stars](https://r-spatial.github.io/stars/). Now I have no idea how this works in the background, so I have no idea if this will be faster, but that's the fun of the experiment.
+Another package I've been curious about for a while, but haven't found an excuse to use yet, is [stars](https://r-spatial.github.io/stars/) with the **read_stars()** function. Now I have no idea how this works in the background, so I don't know if this will be faster, but that's the fun of the experiment.
 
 ```{r stars_method, warning = FALSE, message=FALSE, echo = TRUE, results=FALSE}
 read_stars(l_files)
 ```
 
-Another new package is [terra](https://github.com/rspatial/terra) which is inteded to replace raster. Unlike raster, the rast() function in terra already reads in multiple rasters, so there's no need to write a function in combination with lapply() as we did for raster().
+Another new package is [terra](https://github.com/rspatial/terra), which is inteded to replace raster. Unlike **raster()**, the **rast()** function in terra already reads in multiple rasters, so there's no need to write a function in combination with **lapply()** as we did for **raster()**.
 
 ```{r terra_method, warning = FALSE, message=FALSE, echo = TRUE, results=FALSE}
 rast(l_files)
@@ -89,7 +101,7 @@ rast(l_files)
 # Running the benchmark
 Now I've given a sample of the 4 methods, let's run the benchmark and see which is fastest.
 
-```{r benchmark, warning = FALSE, message=FALSE}
+```{r benchmark, warning = FALSE, message=FALSE, code_folding =TRUE}
 res <- microbenchmark(
   stack = stack(l_files[1:3]),
   lapply_and_raster = func_apply_n_raster(l_files[1:3]),
@@ -103,16 +115,16 @@ res <- microbenchmark(
 kable(summary(res))
 ```
 
-The method I used throughout my project's lifetime, stack(), has not come out too well in this test. From the stars package, read_stars() is the slowest method, but perhaps reading in multiple rasters wasn't the function it was optimised for specifically. The lapply + raster method is a wee bit faster than stack(), as I suspected, but terra's rast() knocks both of these out of the park! I think this means it is time for me properly look into terra and start replacing raster in my workflow.
+The method I used throughout my project's lifetime, **stack()**, has not come out too well in this test. On average, **read_stars()** is the slowest method, but perhaps reading in multiple rasters wasn't the purpose it was optimised for specifically. The **lapply(x, raster)** + **stack()** method is a wee bit faster than **stack()** on its own, as I suspected, but terra's **rast()** knocks both of these out of the park! I think this means it is time for me properly look into terra and start replacing raster in my workflow.
 
-Let's plot it as well just to see some of the range here:
+Let's plot it as well to visualise the range here:
 
-```{r benchmark_plot, warning = FALSE}
+```{r benchmark_plot, warning = FALSE, code_folding =TRUE}
 autoplot(res)
 
 ```
 
-So lapply(x, raster) and stack() are definitely faster than read_stars() on average. While stack() is a wee bit slower than lapply(x, raster), they do mostly overlap. In this case I think it seems to be a tradeoff between more concise code (stack()) or a slightly faster processing time, but the difference is minimal.
+So **lapply(x, raster)** + **stack()** are definitely faster than **read_stars()** on average. While **stack()** on its own is a wee bit slower than **lapply(x, raster)** + **stack()**, they do mostly overlap. In this case I think it seems to be a tradeoff between more concise code in just **stack()** or a slightly faster processing time calling multiple functions, but the difference is minimal.
 
-Terra's rast() however, has both. It's far more concise and much faster. Another benefit seems to be that there is no differentiation between stack() and raster(), so whether reading in a large folder of rasters or reading in a single raster the user doesn't have to use a different function.
+Terra's **rast()** however, has both. It's far more concise and much faster. Another benefit seems to be that there is no differentiation between **stack()** and **raster()**, so whether reading in a large folder of rasters or reading in a single raster the user doesn't have to use a different function.
 

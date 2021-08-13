@@ -3,7 +3,6 @@
 "0","  lapply_and_raster = func_apply_n_raster(l_files[1:3]),"
 "0","  read_stars = read_stars(l_files[1:3]),"
 "0","  terra_rast = rast(l_files[1:3]),"
-"0","  terra_lapply_rast = lapply(l_files[1:3],rast),"
 "0","  times = 100"
 "0",")"
 "0","#the reason I'm passing a summary() function through to kable is that"
