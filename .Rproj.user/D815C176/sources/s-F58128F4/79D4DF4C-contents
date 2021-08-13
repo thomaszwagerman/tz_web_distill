@@ -79,7 +79,7 @@ Another package I've been curious about for a while, but haven't found an excuse
 read_stars(l_files)
 ```
 
-Another new package is [terra](https://github.com/rspatial/terra) which is inteded to replace raster. Unlike raster, the rast() function in terra already reads in multiple rasters, so there's no need to write a function as we did for raster().
+Another new package is [terra](https://github.com/rspatial/terra) which is inteded to replace raster. Unlike raster, the rast() function in terra already reads in multiple rasters, so there's no need to write a function in combination with lapply() as we did for raster().
 
 ```{r terra_method, warning = FALSE, message=FALSE, echo = TRUE, results=FALSE}
 rast(l_files)
@@ -103,7 +103,7 @@ res <- microbenchmark(
 kable(summary(res))
 ```
 
-Of course, the method I used throughout my project's lifetime, stack(), is the slowest. The lapply method is a wee bit faster, but read_stars is on average almost twice as fast! I think this means it is time for me properly look into stars and incorporate it into my workflow.
+The method I used throughout my project's lifetime, stack(), has not come out too well in this test. From the stars package, read_stars() is the slowest method, but perhaps reading in multiple rasters wasn't the function it was optimised for specifically. The lapply + raster method is a wee bit faster than stack(), as I suspected, but terra's rast() knocks both of these out of the park! I think this means it is time for me properly look into terra and start replacing raster in my workflow.
 
 Let's plot it as well just to see some of the range here:
 
@@ -112,5 +112,7 @@ autoplot(res)
 
 ```
 
-So lapply(x, raster) and read_stars() are definitely faster than stack() on average, but read_stars() and lapply(x, raster) do overlap a wee bit, so I could probably get away with using lapply until I learn to use stars properly... or is that another excuse I don't need to put off learning stars?
+So lapply(x, raster) and stack() are definitely faster than read_stars() on average. While stack() is a wee bit slower than lapply(x, raster), they do mostly overlap. In this case I think it seems to be a tradeoff between more concise code (stack()) or a slightly faster processing time, but the difference is minimal.
+
+Terra's rast() however, has both. It's far more concise and much faster. Another benefit seems to be that there is no differentiation between stack() and raster(), so whether reading in a large folder of rasters or reading in a single raster the user doesn't have to use a different function.
 
