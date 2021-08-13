@@ -2,7 +2,6 @@
 title: "Reading in multiple raster performance."
 description: |
   This is a short blog post where I test the performance of different methods to read in multiple rasters.
-draft: true
 author:
   - name: Thomas Zwagerman
     url: https://twitter.com/thomzwa
@@ -25,7 +24,7 @@ categories:
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-```{r preview,echo=FALSE, include = FALSE, code_folding=FALSE}
+```{r preview,echo=FALSE}
 knitr::include_graphics("preview.jpg")
 ```
 <aside>
@@ -57,8 +56,8 @@ library(ggplot2)
 library(knitr)
 library(terra)
 
-lu_dir <- "C:/Users/thowag/Documents/tz_web_distill/_posts/2021-08-12-reading-in-multiple-raster-performance/glw_rasters/"
-#lu_dir <- "/glw_rasters/"
+# lu_dir <- "C:/Users/thowag/Documents/tz_web_distill/_posts/2021-08-12-reading-in-multiple-raster-performance/"
+lu_dir <- paste0(getwd(),"/glw_rasters/")
 l_files <- list.files(lu_dir, pattern = ".tif")
 l_files <- paste0(lu_dir,l_files)
 p1 <- rast(l_files[1])
@@ -70,7 +69,7 @@ It's a good dataset for this purpose as it's relatively lightweight and I alread
 # The 4 methods
 The first method is the one I used during my project, which is **stack()**. The reason I went for **stack()** is that it's probably the most concise method of stacking a large number of rasters, because you read the raster files straight into a stack. But... I had a feeling this was maybe taking more time than I'd like.
 
-```{r stack_method, warning = FALSE, message=FALSE, echo = TRUE, results=FALSE, code_folding=FALSE}
+```{r stack_method, warning = FALSE, message=FALSE, echo = TRUE, results=FALSE, eval = FALSE,code_folding=FALSE}
 stack(l_files)
 ```
 
@@ -90,7 +89,7 @@ return(s_rasters)
 
 Another package I've been curious about for a while, but haven't found an excuse to use yet, is [stars](https://r-spatial.github.io/stars/) with the **read_stars()** function. Now I have no idea how this works in the background, so I don't know if this will be faster, but that's the fun of the experiment.
 
-```{r stars_method, warning = FALSE, message=FALSE, echo = TRUE, results=FALSE, code_folding=FALSE}
+```{r stars_method, warning = FALSE, message=FALSE, echo = TRUE, results=FALSE, eval = FALSE, code_folding=FALSE}
 read_stars(l_files)
 ```
 
