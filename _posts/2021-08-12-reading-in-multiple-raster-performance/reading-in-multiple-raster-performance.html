@@ -109,7 +109,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","draft","author","date","output","categories"]}},"value":[{"type":"character","attributes":{},"value":["Reading in multiple raster performance."]},{"type":"character","attributes":{},"value":["This is a short blog post where I test the performance of different methods to read in multiple rasters.\n"]},{"type":"logical","attributes":{},"value":[true]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url"]}},"value":[{"type":"character","attributes":{},"value":["Thomas Zwagerman"]},{"type":"character","attributes":{},"value":["https://twitter.com/thomzwa"]}]}]},{"type":"character","attributes":{},"value":["08-12-2021"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["self_contained","toc"]}},"value":[{"type":"logical","attributes":{},"value":[false]},{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"character","attributes":{},"value":["rspatial","raster","terra","benchmark"]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","draft","author","date","output","categories"]}},"value":[{"type":"character","attributes":{},"value":["Reading in multiple raster performance."]},{"type":"character","attributes":{},"value":["This is a short blog post where I test the performance of different methods to read in multiple rasters.\n"]},{"type":"logical","attributes":{},"value":[true]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Thomas Zwagerman"]},{"type":"character","attributes":{},"value":["https://twitter.com/thomzwa"]},{"type":"character","attributes":{},"value":["Centre for Ecology & Hydrology"]},{"type":"character","attributes":{},"value":["https://www.ceh.ac.uk/"]}]}]},{"type":"character","attributes":{},"value":["08-12-2021"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["self_contained","code_folding","toc"]}},"value":[{"type":"logical","attributes":{},"value":[false]},{"type":"logical","attributes":{},"value":[true]},{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"character","attributes":{},"value":["rspatial","raster","terra","benchmark"]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   
@@ -1452,7 +1452,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Reading in multiple raster performance.","description":"This is a short blog post where I test the performance of different methods to read in multiple rasters.","authors":[{"author":"Thomas Zwagerman","authorURL":"https://twitter.com/thomzwa","affiliation":"&nbsp;","affiliationURL":"#","orcidID":""}],"publishedDate":"2021-08-12T00:00:00.000+01:00","citationText":"Zwagerman, 2021"}
+{"title":"Reading in multiple raster performance.","description":"This is a short blog post where I test the performance of different methods to read in multiple rasters.","authors":[{"author":"Thomas Zwagerman","authorURL":"https://twitter.com/thomzwa","affiliation":"Centre for Ecology & Hydrology","affiliationURL":"https://www.ceh.ac.uk/","orcidID":""}],"publishedDate":"2021-08-12T00:00:00.000+01:00","citationText":"Zwagerman, 2021"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -1475,7 +1475,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 </div>
 
 <div class="d-byline">
-  Thomas Zwagerman <a href="https://twitter.com/thomzwa" class="uri">https://twitter.com/thomzwa</a> 
+  Thomas Zwagerman <a href="https://twitter.com/thomzwa" class="uri">https://twitter.com/thomzwa</a> (Centre for Ecology &amp; Hydrology)<a href="https://www.ceh.ac.uk/" class="uri">https://www.ceh.ac.uk/</a>
   
 <br/>08-12-2021
 </div>
@@ -1485,27 +1485,54 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <nav class="l-text toc figcaption" id="TOC">
 <h3>Contents</h3>
 <ul>
-<li><a href="#efficiency">Efficiency</a></li>
-<li><a href="#a-look-at-the-files-to-process">A look at the files to process</a></li>
+<li><a href="#a-need-for-efficiency">A need for efficiency</a></li>
+<li><a href="#processing-raster-files">Processing raster files</a></li>
 <li><a href="#the-4-methods">The 4 methods</a></li>
 <li><a href="#running-the-benchmark">Running the benchmark</a></li>
+<li><a href="#in-summary">In summary</a></li>
 </ul>
 </nav>
 </div>
 <div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'>knitr</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/knitr/man/include_graphics.html'>include_graphics</a></span><span class='op'>(</span><span class='st'>"preview.jpg"</span><span class='op'>)</span>
+</code></pre>
+</div>
 <p><img src="preview.jpg" width="1424" /></p>
 </div>
 <aside>
 Photo by <a href="https://unsplash.com/@oskaryil?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Oskar Yildiz</a> on <a href="https://unsplash.com/s/photos/programming?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>
 </aside>
-<h1 id="efficiency">Efficiency</h1>
+<h1 id="a-need-for-efficiency">A need for efficiency</h1>
 <p>I’ve recently been working on a project where lots of rasters would need to be processed, put together into a dataframe and then combined with other spatial data. That combined dataset would then need to be processed and written out again.</p>
 <p>In other words, a pretty long workflow - which can be quite prone to error. Having to do re-runs of such a lengthy process is not only annoying but also extremely time consuming.</p>
 <p>For that reason I thought I’d test some different ways of processing rasters, so that at least the upfront processing time for each re-run is minimised.</p>
-<p>Let’s get started with the method I used in my project, and then we’ll try some improvements from there!</p>
-<h1 id="a-look-at-the-files-to-process">A look at the files to process</h1>
+<p>Let’s get started with the method I used in my project, and then we’ll try some improvements from there.</p>
+<h1 id="processing-raster-files">Processing raster files</h1>
 <p>I can’t share the rasters I used for my project, so instead I’m working with a small dataset from the FAO, called <a href="http://www.fao.org/livestock-systems/global-distributions/en/">Gridded Livestock of the World</a>. Pretty much what it says on the tin, with different rasters for each animal type. For example here is the raster for cattle:</p>
 <div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='co'>#Libraries----</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://tidyverse.tidyverse.org'>tidyverse</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://rspatial.org/raster'>raster</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/joshuaulrich/microbenchmark/'>microbenchmark</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/stars/'>stars</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://yihui.org/knitr/'>knitr</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://rspatial.org/terra'>terra</a></span><span class='op'>)</span>
+
+<span class='va'>lu_dir</span> <span class='op'>&lt;-</span> <span class='st'>"C:/Users/thowag/Documents/tz_web_distill/_posts/2021-08-12-reading-in-multiple-raster-performance/glw_rasters/"</span>
+<span class='co'>#lu_dir &lt;- "/glw_rasters/"</span>
+<span class='va'>l_files</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.files.html'>list.files</a></span><span class='op'>(</span><span class='va'>lu_dir</span>, pattern <span class='op'>=</span> <span class='st'>".tif"</span><span class='op'>)</span>
+<span class='va'>l_files</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste0</a></span><span class='op'>(</span><span class='va'>lu_dir</span>,<span class='va'>l_files</span><span class='op'>)</span>
+<span class='va'>p1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/terra/man/rast.html'>rast</a></span><span class='op'>(</span><span class='va'>l_files</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/pkg/raster/man/plot.html'>plot</a></span><span class='op'>(</span><span class='va'>p1</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <p><img src="reading-in-multiple-raster-performance_files/figure-html5/directory_numbers-1.png" width="624" /></p>
 </div>
 <p>It’s a good dataset for this purpose as it’s relatively lightweight and I already know all rasters are the same extent. Now let’s have a look at the different methods of reading in multiple raster files.</p>
@@ -1513,7 +1540,7 @@ Photo by <a href="https://unsplash.com/@oskaryil?utm_source=unsplash&utm_medium=
 <p>The first method is the one I used during my project, which is <strong>stack()</strong>. The reason I went for <strong>stack()</strong> is that it’s probably the most concise method of stacking a large number of rasters, because you read the raster files straight into a stack. But… I had a feeling this was maybe taking more time than I’d like.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/utils/stack.html'>stack</a></span><span class='op'>(</span><span class='va'>l_files</span><span class='op'>)</span>
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/pkg/raster/man/stack.html'>stack</a></span><span class='op'>(</span><span class='va'>l_files</span><span class='op'>)</span>
 </code></pre>
 </div>
 </div>
@@ -1525,7 +1552,7 @@ Photo by <a href="https://unsplash.com/@oskaryil?utm_source=unsplash&utm_medium=
 <span class='co'>#reading the rasters in individually, into a list object</span>
 <span class='va'>l_rasters</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>files_to_read</span>, <span class='va'>raster</span><span class='op'>)</span>
 <span class='co'>#then stack the read in list object into a single stack</span>
-<span class='va'>s_rasters</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/utils/stack.html'>stack</a></span><span class='op'>(</span><span class='va'>l_rasters</span><span class='op'>)</span>
+<span class='va'>s_rasters</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/raster/man/stack.html'>stack</a></span><span class='op'>(</span><span class='va'>l_rasters</span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/function.html'>return</a></span><span class='op'>(</span><span class='va'>s_rasters</span><span class='op'>)</span>
 <span class='op'>}</span>
 </code></pre>
@@ -1534,20 +1561,37 @@ Photo by <a href="https://unsplash.com/@oskaryil?utm_source=unsplash&utm_medium=
 <p>Another package I’ve been curious about for a while, but haven’t found an excuse to use yet, is <a href="https://r-spatial.github.io/stars/">stars</a> with the <strong>read_stars()</strong> function. Now I have no idea how this works in the background, so I don’t know if this will be faster, but that’s the fun of the experiment.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'>read_stars</span><span class='op'>(</span><span class='va'>l_files</span><span class='op'>)</span>
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://r-spatial.github.io/stars/reference/read_stars.html'>read_stars</a></span><span class='op'>(</span><span class='va'>l_files</span><span class='op'>)</span>
 </code></pre>
 </div>
 </div>
 <p>Another new package is <a href="https://github.com/rspatial/terra">terra</a>, which is inteded to replace raster. Unlike <strong>raster()</strong>, the <strong>rast()</strong> function in terra already reads in multiple rasters, so there’s no need to write a function in combination with <strong>lapply()</strong> as we did for <strong>raster()</strong>.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'>rast</span><span class='op'>(</span><span class='va'>l_files</span><span class='op'>)</span>
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/pkg/terra/man/rast.html'>rast</a></span><span class='op'>(</span><span class='va'>l_files</span><span class='op'>)</span>
 </code></pre>
 </div>
 </div>
 <h1 id="running-the-benchmark">Running the benchmark</h1>
 <p>Now I’ve given a sample of the 4 methods, let’s run the benchmark and see which is fastest.</p>
 <div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>res</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/microbenchmark/man/microbenchmark.html'>microbenchmark</a></span><span class='op'>(</span>
+  stack <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/pkg/raster/man/stack.html'>stack</a></span><span class='op'>(</span><span class='va'>l_files</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span><span class='op'>]</span><span class='op'>)</span>,
+  lapply_and_raster <span class='op'>=</span> <span class='fu'>func_apply_n_raster</span><span class='op'>(</span><span class='va'>l_files</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span><span class='op'>]</span><span class='op'>)</span>,
+  read_stars <span class='op'>=</span> <span class='fu'><a href='https://r-spatial.github.io/stars/reference/read_stars.html'>read_stars</a></span><span class='op'>(</span><span class='va'>l_files</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span><span class='op'>]</span><span class='op'>)</span>,
+  terra_rast <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/pkg/terra/man/rast.html'>rast</a></span><span class='op'>(</span><span class='va'>l_files</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span><span class='op'>]</span><span class='op'>)</span>,
+  times <span class='op'>=</span> <span class='fl'>100</span>
+<span class='op'>)</span>
+<span class='co'>#the reason I'm passing a summary() function through to kable is that</span>
+<span class='co'>#kable (or any paged table function) doesn't provide expected output with a microbenchmark output</span>
+<span class='co'>#see this open issue https://github.com/rstudio/rmarkdown/issues/1469</span>
+<span class='fu'><a href='https://rdrr.io/pkg/knitr/man/kable.html'>kable</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/pkg/terra/man/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>res</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <table>
 <thead>
 <tr class="header">
@@ -1564,54 +1608,64 @@ Photo by <a href="https://unsplash.com/@oskaryil?utm_source=unsplash&utm_medium=
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">stack</td>
-<td style="text-align: right;">63.7949</td>
-<td style="text-align: right;">67.68190</td>
-<td style="text-align: right;">100.09439</td>
-<td style="text-align: right;">73.90900</td>
-<td style="text-align: right;">98.75340</td>
-<td style="text-align: right;">824.1519</td>
+<td style="text-align: right;">65.2145</td>
+<td style="text-align: right;">73.91890</td>
+<td style="text-align: right;">102.83470</td>
+<td style="text-align: right;">85.75865</td>
+<td style="text-align: right;">103.44385</td>
+<td style="text-align: right;">507.4893</td>
 <td style="text-align: right;">100</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">lapply_and_raster</td>
-<td style="text-align: right;">46.6701</td>
-<td style="text-align: right;">52.42865</td>
-<td style="text-align: right;">81.36800</td>
-<td style="text-align: right;">60.58330</td>
-<td style="text-align: right;">83.75530</td>
-<td style="text-align: right;">546.8586</td>
+<td style="text-align: right;">49.7322</td>
+<td style="text-align: right;">56.33820</td>
+<td style="text-align: right;">90.92181</td>
+<td style="text-align: right;">67.51970</td>
+<td style="text-align: right;">94.88970</td>
+<td style="text-align: right;">631.2363</td>
 <td style="text-align: right;">100</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">read_stars</td>
-<td style="text-align: right;">944.6924</td>
-<td style="text-align: right;">1174.00130</td>
-<td style="text-align: right;">1510.08288</td>
-<td style="text-align: right;">1315.06065</td>
-<td style="text-align: right;">1677.91355</td>
-<td style="text-align: right;">3805.7289</td>
+<td style="text-align: right;">1122.7334</td>
+<td style="text-align: right;">1226.38700</td>
+<td style="text-align: right;">1516.44712</td>
+<td style="text-align: right;">1309.55045</td>
+<td style="text-align: right;">1612.83625</td>
+<td style="text-align: right;">3531.9822</td>
 <td style="text-align: right;">100</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">terra_rast</td>
-<td style="text-align: right;">6.9995</td>
-<td style="text-align: right;">8.31710</td>
-<td style="text-align: right;">11.54706</td>
-<td style="text-align: right;">9.57255</td>
-<td style="text-align: right;">13.61855</td>
-<td style="text-align: right;">33.2574</td>
+<td style="text-align: right;">7.2295</td>
+<td style="text-align: right;">8.48755</td>
+<td style="text-align: right;">12.14368</td>
+<td style="text-align: right;">10.04205</td>
+<td style="text-align: right;">13.53075</td>
+<td style="text-align: right;">45.8310</td>
 <td style="text-align: right;">100</td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>The method I used throughout my project’s lifetime, <strong>stack()</strong>, has not come out too well in this test. On average, <strong>read_stars()</strong> is the slowest method, but perhaps reading in multiple rasters wasn’t the purpose it was optimised for specifically. The <strong>lapply(x, raster)</strong> + <strong>stack()</strong> method is a wee bit faster than <strong>stack()</strong> on its own, as I suspected, but terra’s <strong>rast()</strong> knocks both of these out of the park! I think this means it is time for me properly look into terra and start replacing raster in my workflow.</p>
+<p>The method I used throughout my project’s lifetime, <strong>stack()</strong>, has not come out too well in this test. On average, <strong>read_stars()</strong> is the slowest method, but perhaps reading in multiple rasters wasn’t the purpose it was optimised for specifically. The <strong>lapply(x, raster)</strong> + <strong>stack()</strong> method is a wee bit faster than <strong>stack()</strong> on its own, as I suspected, but terra’s <strong>rast()</strong> knocks both of these out of the park. I think this means it is time for me properly look into terra and start replacing raster in my workflow.</p>
 <p>Let’s plot it as well to visualise the range here:</p>
 <div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/autoplot.html'>autoplot</a></span><span class='op'>(</span><span class='va'>res</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <p><img src="reading-in-multiple-raster-performance_files/figure-html5/benchmark_plot-1.png" width="624" /></p>
 </div>
 <p>So <strong>lapply(x, raster)</strong> + <strong>stack()</strong> are definitely faster than <strong>read_stars()</strong> on average. While <strong>stack()</strong> on its own is a wee bit slower than <strong>lapply(x, raster)</strong> + <strong>stack()</strong>, they do mostly overlap. In this case I think it seems to be a tradeoff between more concise code in just <strong>stack()</strong> or a slightly faster processing time calling multiple functions, but the difference is minimal.</p>
 <p>Terra’s <strong>rast()</strong> however, has both. It’s far more concise and much faster. Another benefit seems to be that there is no differentiation between <strong>stack()</strong> and <strong>raster()</strong>, so whether reading in a large folder of rasters or reading in a single raster the user doesn’t have to use a different function.</p>
+<h1 id="in-summary">In summary</h1>
+<p>It’s time to update my scripts and learn to use the terra package, as it’s the most concise and efficient way of reading in multiple raster files at once. It’s also rewarding that after reading <a href="https://csgillespie.github.io/efficientR/programming.html#the-apply-family">Chapter 3 of Efficient R programming</a> I can actually apply some of the lessons in improving efficiency to my own script, and if it wasn’t for <strong>rast()</strong>, using <strong>lapply(x, raster)</strong> + <strong>stack()</strong> instead of just <strong>stack()</strong> my workflow would have also improved.</p>
+<p>In the future I might write another blog post to test different methods of reading in NetCDF files as I frequently use those too, and I’m curious to see how big the differences are there. I’d expect more from stars in that one!</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
