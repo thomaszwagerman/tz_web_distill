@@ -1,7 +1,7 @@
 ---
-title: "Benchmarking 4 methods to read in multiple rasters."
+title: "Benchmarking four methods to read in multiple rasters files."
 description: |
-  Testing the performance of 4 different methods of reading in multiple raster files to reduce processing time in my modelling work.
+  Testing the performance of four different methods of reading in multiple raster files to reduce processing time in my modelling work.
 author:
   - name: Thomas Zwagerman
     url: https://twitter.com/thomzwa
@@ -61,8 +61,8 @@ plot(p1)
 
 It's a good dataset for this purpose as it's relatively lightweight and I already know all rasters are the same extent. Now let's have a look at the different methods of reading in multiple raster files.
 
-# The 4 methods
-In total I'm looking at 4 methods, **stack()**, using **raster()** within an **lapply** function and then using **stack()** once read in, **read_stars** and finally **rast()**. This is by no means an exhaustive list but these are the main ones I could think of as of August 2021.
+# The four methods
+In total I'm looking at four methods, **stack()**, using **raster()** within an **lapply** function and then using **stack()** once read in, **read_stars** and finally **rast()**. This is by no means an exhaustive list but these are the main ones I could think of as of August 2021.
 
 ### stack()
 The first method is the one I used during my project, which is **stack()**. The reason I went for **stack()** is that it's probably the most concise method of stacking a large number of rasters, because you read the raster files straight into a stack. But... I had a feeling this was maybe taking more time than I'd like.
