@@ -1,7 +1,7 @@
 ---
-title: "Reading in multiple raster performance."
+title: "Benchmarking 4 methods to read in multiple rasters."
 description: |
-  This is a short blog post where I test the performance of different methods to read in multiple rasters.
+  Testing the performance of 4 different methods of reading in multiple raster files to reduce processing time in my modelling work.
 author:
   - name: Thomas Zwagerman
     url: https://twitter.com/thomzwa
@@ -32,17 +32,13 @@ Photo by <a href="https://unsplash.com/@oskaryil?utm_source=unsplash&utm_medium=
 </aside>
 
 # A need for efficiency
-
 I've recently been working on a project where lots of rasters would need to be processed, put together into a dataframe and then combined with other spatial data. That combined dataset would then need to be processed and written out again. 
 
 In other words, a pretty long workflow - which can be quite prone to error. Having to do re-runs of such a lengthy process is not only annoying but also extremely time consuming.
 
 For that reason I thought I'd test some different ways of processing rasters, so that at least the upfront processing time for each re-run is minimised.
 
-Let's get started with the method I used in my project, and then we'll try some improvements from there.
-
 # Processing raster files
-
 I can't share the rasters I used for my project, so instead I'm working with a small dataset from the FAO, called [Gridded Livestock of the World](http://www.fao.org/livestock-systems/global-distributions/en/). Pretty much what it says on the tin, with different rasters for each animal type. For example here is the raster for cattle: 
 
 ```{r directory_numbers, warning = FALSE, echo = FALSE, message=FALSE, code_folding=TRUE}
@@ -56,7 +52,6 @@ library(ggplot2)
 library(knitr)
 library(terra)
 
-# lu_dir <- "C:/Users/thowag/Documents/tz_web_distill/_posts/2021-08-12-reading-in-multiple-raster-performance/"
 lu_dir <- paste0(getwd(),"/glw_rasters/")
 l_files <- list.files(lu_dir, pattern = ".tif")
 l_files <- paste0(lu_dir,l_files)
@@ -67,12 +62,16 @@ plot(p1)
 It's a good dataset for this purpose as it's relatively lightweight and I already know all rasters are the same extent. Now let's have a look at the different methods of reading in multiple raster files.
 
 # The 4 methods
+In total I'm looking at 4 methods, **stack()**, using **raster()** within an **lapply** function and then using **stack()** once read in, **read_stars** and finally **rast()**. This is by no means an exhaustive list but these are the main ones I could think of as of August 2021.
+
+### stack()
 The first method is the one I used during my project, which is **stack()**. The reason I went for **stack()** is that it's probably the most concise method of stacking a large number of rasters, because you read the raster files straight into a stack. But... I had a feeling this was maybe taking more time than I'd like.
 
 ```{r stack_method, warning = FALSE, message=FALSE, echo = TRUE, results=FALSE, eval = FALSE,code_folding=FALSE}
 stack(l_files)
 ```
 
+### lapply(l_files, raster), and then stack()
 A method I was curious about after reading [Chapter 3 of Efficient R programming](https://csgillespie.github.io/efficientR/programming.html#the-apply-family) by Colin Gillespie and Robin Lovelace, is whether using **lapply()** to individually reading in rasters into a list, and then stacking them is faster than reading in the rasters into a stack straight away.
 
 Of course, that is multiple functions, so to make it work within microbenchmark, I'm defining it into a single function here. Normally I probably wouldn't bother doing that.
@@ -87,18 +86,19 @@ return(s_rasters)
 }
 ```
 
-Another package I've been curious about for a while, but haven't found an excuse to use yet, is [stars](https://r-spatial.github.io/stars/) with the **read_stars()** function. Now I have no idea how this works in the background, so I don't know if this will be faster, but that's the fun of the experiment.
+### read_stars()
+A package I've been curious about for a while, but haven't found an excuse to use yet, is [stars](https://r-spatial.github.io/stars/) with the **read_stars()** function. Now I have no idea how this works in the background, so I don't know if this will be faster, but that's the fun of the experiment.
 
 ```{r stars_method, warning = FALSE, message=FALSE, echo = TRUE, results=FALSE, eval = FALSE, code_folding=FALSE}
 read_stars(l_files)
 ```
 
+### rast()
 Another new package is [terra](https://github.com/rspatial/terra), which is inteded to replace raster. Unlike **raster()**, the **rast()** function in terra already reads in multiple rasters, so there's no need to write a function in combination with **lapply()** as we did for **raster()**.
 
 ```{r terra_method, warning = FALSE, message=FALSE, echo = TRUE, results=FALSE, code_folding=FALSE}
 rast(l_files)
 ```
-
 
 # Running the benchmark
 Now I've given a sample of the 4 methods, let's run the benchmark and see which is fastest.
@@ -131,7 +131,6 @@ So **lapply(x, raster)** + **stack()** are definitely faster than **read_stars()
 Terra's **rast()** however, has both. It's far more concise and much faster. Another benefit seems to be that there is no differentiation between **stack()** and **raster()**, so whether reading in a large folder of rasters or reading in a single raster the user doesn't have to use a different function.
 
 # In summary
-
 It's time to update my scripts and learn to use the terra package, as it's the most concise and efficient way of reading in multiple raster files at once. It's also rewarding that after reading [Chapter 3 of Efficient R programming](https://csgillespie.github.io/efficientR/programming.html#the-apply-family) I can actually apply some of the lessons in improving efficiency to my own script, and if it wasn't for **rast()**, using **lapply(x, raster)** + **stack()** instead of just **stack()** my workflow would have also improved. 
 
 In the future I might write another blog post to test different methods of reading in NetCDF files as I frequently use those too, and I'm curious to see how big the differences are there. I'd expect more from stars in that one!
