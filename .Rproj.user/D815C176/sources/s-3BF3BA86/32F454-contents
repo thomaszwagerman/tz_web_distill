@@ -1,0 +1,136 @@
+#Libraries----
+library(sf)
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(mapview)
+library(leaflet)
+library(leafpop)
+library(ggplot2)
+
+#Read in the files=----
+constituency_shp<-st_read("C:\\Users\\thowag\\Desktop\\ge_scot_2021\\Scottish_Parliamentary_Constituencies_(May_2016)_Boundaries.shp")
+constituency_shp <- constituency_shp %>% 
+  select(spc16cd,spc16nm)
+constituency_shp <- gSimplify(constituency_shp, tol =10)
+
+region_shp<-st_read("C:\\Users\\thowag\\Desktop\\ge_scot_2021\\scotparl_regions_2016.shp")
+results_df <- read_excel("C:\\Users\\thowag\\Desktop\\ge_scot_2021\\Electoral-Data-Results-May-2016-Scottish-Parliament-elections.xls", 
+                         sheet = 'Constituencies - Results',
+                         range = 'A2:AA75')
+#Data wrangling----
+#Remove some of the turnout information, not needed
+results_df <- as.data.frame(results_df) %>% 
+  select(-4:-17)
+
+#Create a dataframe for the constituency winner----
+winner_df <- results_df %>% 
+  select(`ONS Code`,Constituency,Region,Win)
+#Create a dataframe for the vote share by constituency
+voteshare_df <- results_df %>% 
+  select(-Win,-Second)
+voteshare_df <- pivot_longer(voteshare_df,cols = c(4:11),names_to = "party",values_to = "share")
+#Take first three letters of each party only
+voteshare_df$party <- substr(voteshare_df$party,1,3)
+#Create a colour code df based on the unique parties
+party <- as.data.frame(unique(voteshare_df$party))
+colnames(party)[1] <- "party"
+party$colour_code <- c(
+  #con
+  "#0087DC", 
+  #lab
+  "#E4003B",
+  #lib
+  "#FAA61A",
+  #snp
+  "#FDF38E",
+  #independent
+  "#696969",
+  #tusc,
+  "#EC008C",
+  #grn
+  "#00B140",
+  #other, generic gray
+  "#808080")
+#manually change some codes, because for some reason they do not match up
+constituency_shp$spc16cd[which(constituency_shp$spc16cd == "S16000147")] <- voteshare_df$`ONS Code`[which(voteshare_df$Constituency=="Glasgow Provan")][1]
+constituency_shp$spc16cd[which(constituency_shp$spc16cd == "S16000148")] <- voteshare_df$`ONS Code`[which(voteshare_df$Constituency=="Strathkelvin & Bearsden")][1]
+#reorder
+voteshare_df <- voteshare_df[order(voteshare_df$`ONS Code`),]
+#reset rownumbers so they line up
+rownames(voteshare_df) <- 1:nrow(voteshare_df)
+
+pie_plot_list <- lapply(unique(voteshare_df$`ONS Code`), function(i) {
+  #filter and group info per gemeente code
+  regio_df <- voteshare_df %>% 
+    filter(`ONS Code` == i) %>%
+    dplyr::ungroup() %>% 
+    select(party,share,Constituency) %>%
+    filter(share >0.1) %>% 
+    as.data.frame()
+  #order by the vote tally 
+  regio_df <- regio_df[order(regio_df$share,decreasing = T),]
+  #rejoin with the colourscheme
+  regio_df <- left_join(regio_df,party)
+  
+  #plot as a bar chart, important to paste the corresponding gemeente name
+  ggplot(regio_df) +
+    geom_bar(aes(x = "", y = share, fill = party),
+             stat = "identity", colour = "black", width =1) +
+    #geom_text(aes(x = "", y = pct, label = percent(pct)), position = position_stack(vjust = 0.5))+
+    coord_polar("y", start = 0) +
+    labs(x = NULL, y = NULL, fill = NULL, 
+         title = paste("Election result",unique(regio_df$Constituency))) +
+    theme_classic()+
+    scale_fill_manual(values = regio_df$colour_code, 
+                      limits = regio_df$party)+ 
+    theme(axis.line = element_blank(),
+          axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          plot.title = element_text(hjust = 0.5, color = "black"),
+          legend.position = "bottom")
+})
+
+edi_south <- voteshare_df %>% 
+  filter(`ONS Code` == "S16000108") %>%
+  dplyr::ungroup() %>% 
+  select(party,share,Constituency) %>%
+  filter(share >0.1) %>% 
+  as.data.frame()
+edi_south <- left_join(edi_south,party)
+edi_south$share <- as.factor(edi_south$share)
+
+edi_south <- edi_south[order(edi_south$share,decreasing = T),]
+ggplot(edi_south) +
+  geom_bar(aes(x = party, y = share, fill = party),
+           stat = "identity", 
+           colour = "black", width =1) +
+  geom_text(aes(x = party, y = share, label = share), vjust = -0.5, size = 3.5)+
+  #coord_polar("y", start = 0) +
+  labs(x = NULL, y = NULL, fill = NULL, 
+       title = paste("Election result",unique(edi_south$Constituency))) +
+  theme_classic()+
+  scale_x_discrete(limits = edi_south$party)+
+  scale_fill_manual(values = edi_south$colour_code, 
+                    limits = edi_south$party)+ 
+  theme(axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        plot.title = element_text(hjust = 0.5, color = "black"),
+        legend.position = "bottom")
+
+constituency_shp_test <- left_join(constituency_shp,winner_df, by = c("spc16cd"="ONS Code"))
+constituency_shp_test$Win <- toupper(constituency_shp_test$Win)
+constituency_shp_test$Win <- gsub("LD","LIB",constituency_shp_test$Win)
+constituency_shp_test <- left_join(constituency_shp_test,party,by = c("Win"="party"))
+#reorder
+constituency_shp_test <- constituency_shp_test[order(constituency_shp_test$spc16cd),]
+#reset rownumbers so they line up
+rownames(constituency_shp_test) <- 1:nrow(constituency_shp_test)
+mapview(constituency_shp_test,
+        zcol = "Win",
+        col.regions = constituency_shp_test$colour_code,
+        popup = popupGraph(pie_plot_list, width = 450,height =300),
+        legend = TRUE,
+        layer.name = "Party"
+        )

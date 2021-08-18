@@ -1,0 +1,427 @@
+#Libraries----
+#dealing with rasters
+library(raster)
+#faster rasterisation for large rasters 
+library(fasterize)
+#manipulating data
+library(dplyr)
+#for a quick bar chart plot
+library(ggplot2)
+#tidyr for pivot longer
+library(tidyr)
+#stringr
+library(sf)
+library(data.table)
+library(stringr)
+library(readxl)
+
+#Directories & files---
+#land use
+lu_dir <- "//nerclactdb.adceh.ceh.ac.uk/Projects/PROJECTS1/SPEED_Metal/Atmos_inputs/Land_Use/BELUC_outputs/run8/output_agg_1km/"
+decadal_years <- seq(from= 1750, to= 1980, by =10)
+
+totals_list <- list()
+for(annum in decadal_years){
+  #county boundaries
+  shp_dir <- "//nerclactdb.adceh.ceh.ac.uk/Projects/PROJECTS1/SPEED_Metal/Atmos_inputs/Historic_data/Industry_activity_data_and_research/Agriculture/animal_numbers/shps/"
+  
+  shp_eng_wal <- st_read(paste0(shp_dir, "EW1871_regcounties/EW1871_regcounties.shp"))
+  shp_scot <- st_read(paste0(shp_dir,"Spre1890_scocounties/Spre1890_scocounties.shp"))
+  shp_scot <- shp_scot %>% 
+    select(-UL_AUTH)
+  shp <- rbind(shp_eng_wal,shp_scot)
+  shp$G_NAME <- gsub("WEST RIDING", "YORKSHIRE",shp$G_NAME)
+  shp$G_NAME <- gsub("EAST RIDING", "YORKSHIRE",shp$G_NAME)
+  shp$G_NAME <- gsub("NORTH RIDING", "YORKSHIRE",shp$G_NAME)
+  shp$G_NAME <- gsub("\\HUNTINGDONSHIRE\\>", "CAMBRIDGESHIRE",shp$G_NAME)
+  shp$G_NAME <- gsub("FORFARSHIRE", "ANGUS",shp$G_NAME)
+  shp$G_NAME <- gsub("MIDDLESEX", "LONDON",shp$G_NAME)
+  shp$G_NAME <- gsub("ABERDEENSHIRE", "PLACEHOLDER",shp$G_NAME)
+  shp$G_NAME <- gsub("WIGTOWNSHIRE", "ABERDEENSHIRE",shp$G_NAME)
+  shp$G_NAME <- gsub("PLACEHOLDER", "WIGTOWNSHIRE",shp$G_NAME)
+  shp <- shp %>% group_by(G_NAME) %>% summarise(G_UNIT = sum(G_UNIT)) %>%  st_cast("MULTIPOLYGON")
+  
+  #animal numbers
+  speed_dir <- "//nerclactdb.adceh.ceh.ac.uk/Projects/PROJECTS1/SPEED_Metal/Atmos_inputs/Historic_data/Industry_activity_data_and_research/Agriculture/animal_numbers/"
+  lstk_per_county <- fread(paste0(speed_dir,"animal_numbers_by_gb_county_decadal_1750_2010.csv"))
+  #check if anything is missing
+  missing <- anti_join(shp, lstk_per_county, by = c("G_NAME" = "g_name"))
+  
+  # rasterize based on your land use raster stack
+  shp$G_NUMBER <- c(1:length(shp$G_NAME))
+  
+  # list all rasters in your dir
+  lu_stk <- list.files(lu_dir, pattern = paste0(annum))
+  # stack outputs as a data.table
+  lu_stk <- stack(paste0(lu_dir,lu_stk))
+  lu_dt <- lu_stk %>% as.data.frame(., xy = T) %>% as.data.table
+  lu_dt <- melt(lu_dt, measure = patterns("^r_"),
+                variable.name = "name",value.name = "area_1km")
+  lu_dt <- lu_dt[complete.cases(lu_dt),]
+  setDT(lu_dt)[,name:= str_replace(name,"^r_","")]
+  setDT(lu_dt)[,name:= str_replace(name,"_pc_1km","")]
+  lu_dt$LANDCOVER = as.character(lapply(strsplit(as.character(lu_dt$name), split="_"), "[", 1))
+  lu_dt$YEAR = as.character(lapply(strsplit(as.character(lu_dt$name), split="_"), "[", 2))
+  
+  county_r <- fasterize(shp, lu_stk[[1]], field = "G_NUMBER")
+  rm(lu_stk)
+  
+  #convert raster to data.table and merge to lu
+  county_dt <- county_r %>% as.data.frame(., xy = T) %>% as.data.table
+  colnames(county_dt) <- c("x","y","COUNTY")
+  setkey(county_dt, "x", "y")
+  setkey(lu_dt, "x", "y")
+  lu_county_dt <- county_dt[lu_dt,nomatch = 0]
+  lu_county_dt<-lu_county_dt[complete.cases(lu_county_dt),]
+  rm(lu_dt)
+  
+  shp_names <- shp %>% 
+    select(G_NAME,G_NUMBER)
+  lstk_per_county <- left_join(lstk_per_county,shp_names, by = c("g_name" ="G_NAME")) %>% 
+    select(-geometry, YEAR = year)
+  
+  lu_county_dt <- lu_county_dt %>% 
+    select(-name)
+  colnames(lstk_per_county)[7] <- "COUNTY"
+  lstk_per_county$YEAR <- as.character(lstk_per_county$YEAR)
+  setkey(lstk_per_county, "COUNTY","YEAR")
+  setkey(lu_county_dt, "COUNTY","YEAR")
+  lstk_county_dt <- lu_county_dt[lstk_per_county,nomatch = 0, allow.cartesian =TRUE]
+  
+  rm(lu_county_dt)
+  rm(county_dt)
+  rm(county_r)
+  
+  lstk_county_dt <- lstk_county_dt %>% 
+    select(x,y,AREA =area_1km,LANDCOVER,YEAR,COUNTY=g_name,ANIMAL_TYPE=cellRef,ANIMAL_NUMBER=g_data,country,data_type)
+  # read in your spreading constants
+  # constant_dir <- "//nerclactdb.adceh.ceh.ac.uk/Projects/PROJECTS1/SPEED_Metal/Atmos_inputs/Historic_data/Industry_activity_data_and_research/Agriculture/animal_numbers/historic_landuse/"
+  # spread_constants <- read_excel(paste0(constant_dir,"LU_distrib_constants.xlsx"),sheet='Spreading_constants') %>% as.data.table()
+  # spread_constants <- melt(spread_constants, measure = c(4:29),
+  #                          variable.name = "YEAR",value.name = "SPREADING_CONSTANT")
+  # colnames(spread_constants) <- c("ANIMAL_TYPE","INPUT_TYPE","LANDCOVER","YEAR","SPREADING_CONSTANT")
+  # setkey(spread_constants, "ANIMAL_TYPE","LANDCOVER","YEAR")
+  # setkey(lstk_county_dt, "ANIMAL_TYPE","LANDCOVER","YEAR")
+  # lstk_county_dt <- spread_constants[lstk_county_dt,nomatch = 0, allow.cartesian =TRUE]
+  # rm(spread_constants)
+  # calculate proportional area of land cover by county. 
+  # e.g. how much of Norfolk's grassland is in a particular cell
+
+  ### you should then have a data.table with
+  # x/EASTING - 1km grid cell easting
+  # y/NORTHING - 1km grid cell northing
+  # ANIMAL_TYPE - livestock sector
+  # COUNTY - county ID
+  # LANDCOVER_TYPE - grass/rough etc
+  # AREA - land cover proportion of cell
+  # AREA_PROP_COUNTY - land cover proportion per county
+  # SPREADING_CONSTANT - your spreading constant
+  # TOTAL - total of livestock sector per county
+  
+  #Livestock
+  prj_dir<-"//nerclactdb.adceh.ceh.ac.uk/Projects/PROJECTS1/SPEED_Metal/Atmos_inputs/Historic_data/Industry_activity_data_and_research/Agriculture/"
+  # agrinv_dir <- ""
+  # manure_output<-as.data.frame(read_excel(paste0(prj_dir,"lstk_metal.xlsx"),range="'Livestock types'!A2:D33"))
+  manure_output<-as.data.frame(read_excel("P:/NEC03642_Mapping_Ag_Emissions_AC0112/AC0112-Agric_Inventory/NAEI_totals_NorthWyke/NH3inv2015_NARSES_Final_1_30092016.xlsm",
+                                          range="'Manure volumes'!A2:G59"))
+  colnames(manure_output)[1] <- "livestock_category"
+  manure_output <- manure_output %>% 
+    filter(!is.na(livestock_category)) %>% 
+    filter(!is.na(`Daily excretion per animal kg`)) %>% 
+    select(livestock_category, slurry_kg_day = `Slurry output per day, kg`, fym_kg_day = `FYM output per day, kg`, housing_period_days = `Housing period (days)`)
+  # manure_output$housing_period_ratio <- manure_output$housing_period_days/365
+  # manure_output$grazing_period_ratio <- 1-manure_output$housing_period_ratio
+  
+  livestock_numbers<-as.data.frame(read_excel("P:/NEC03642_Mapping_Ag_Emissions_AC0112/AC0112-Agric_Inventory/NAEI_totals_NorthWyke/NH3inv2015_NARSES_Final_1_30092016.xlsm",
+                                              range="'Livestock numbers'!A3:G60"))
+  # n_excretion<-as.data.frame(read_excel("P:/NEC03642_Mapping_Ag_Emissions_AC0112/AC0112-Agric_Inventory/NAEI_totals_NorthWyke/NH3inv2015_NARSES_Final_1_30092016.xlsm",
+  #                                             range="'N excretion'!A3:AK55"))
+  # lkup_type<-as.data.frame(read.csv(paste0(prj_dir,"AENEID_OUTPUT/Narses_translation.csv")))
+  livestock_numbers <- livestock_numbers %>% 
+    filter(!is.na(`Livestock Category`)) %>% 
+    filter(!is.na(UK)) %>% 
+    filter(!grepl("Total|check" ,`Livestock Category`)) %>% 
+    select(livestock_category = `Livestock Category`,UK)
+  
+  # n_excretion <- n_excretion %>% 
+  #   filter(!is.na(`Livestock Category`)) %>% 
+  #   select(livestock_category = `Livestock Category`,everything())
+  # n_excretion <- complete.cases(n_excretion)
+  
+  livestock_numbers <- left_join(livestock_numbers,manure_output)
+  livestock_numbers$fym_kg_day[which(livestock_numbers$livestock_category == "Laying hens - deep litter")] <- livestock_numbers$fym_kg_day[which(livestock_numbers$livestock_category == "Laying hens - barn, perchery")]
+  livestock_numbers$housing_period_days[which(livestock_numbers$livestock_category == "Laying hens - deep litter")] <- livestock_numbers$housing_period_days[which(livestock_numbers$livestock_category == "Laying hens - barn, perchery")]
+  livestock_numbers$housing_period_ratio[which(livestock_numbers$livestock_category == "Laying hens - deep litter")] <- livestock_numbers$housing_period_ratio[which(livestock_numbers$livestock_category == "Laying hens - barn, perchery")]
+  livestock_numbers$grazing_period_ratio[which(livestock_numbers$livestock_category == "Laying hens - deep litter")] <- livestock_numbers$grazing_period_ratio[which(livestock_numbers$livestock_category == "Laying hens - barn, perchery")]
+  livestock_numbers <- livestock_numbers %>% 
+    filter(!is.na(housing_period_days)) %>% 
+    as.data.table()
+  livestock_numbers$animal_type <-"test"
+  livestock_numbers$animal_type[1:8] <- "cattle"
+  livestock_numbers$animal_type[9:16] <- "pigs"
+  livestock_numbers$animal_type[17:20] <- "sheep"
+  livestock_numbers$animal_type[23] <- "horses"
+  livestock_numbers$animal_type[24:34] <- "poultry"
+  livestock_numbers[, HERD_RATIO := 
+                      (UK)/sum(UK),
+                    by = .(animal_type)]
+  livestock_numbers$slurry_kg_day[is.na(livestock_numbers$slurry_kg_day)] <-0 
+  livestock_numbers$slurry_kg_day[livestock_numbers$slurry_kg_day == "NA"] <-0 
+  livestock_numbers$slurry_kg_day<- as.numeric(livestock_numbers$slurry_kg_day)
+  
+  inc_cols <- c("slurry_kg_day","fym_kg_day","housing_period_days")
+  livestock_numbers[, (inc_cols) := lapply(.SD, function(x) 
+    x * livestock_numbers[['HERD_RATIO']] ), .SDcols = inc_cols]
+  
+  manure_totals <- livestock_numbers[, .(slurry_kg_day, fym_kg_day, housing_period_days, animal_type, 
+                                         HERD_RATIO)][, .(slurry_kg_day = sum(slurry_kg_day), fym_kg_day = sum(fym_kg_day), 
+                                                          housing_period_days = sum(housing_period_days), HERD_RATIO = sum(HERD_RATIO)), 
+                                                      keyby = .(animal_type)]
+  manure_totals$housing_period_ratio <- manure_totals$housing_period_days/365
+  manure_totals$grazing_period_ratio <- 1-manure_totals$housing_period_ratio
+  
+  DM_ratios <- as.data.frame(read.csv(paste0(prj_dir,"dm_values_simple.csv")))
+  manure_totals <- merge(x=manure_totals,y=DM_ratios,allow.cartesian=T)
+  
+  #Calculate FYM and slurry output per year
+  manure_totals$fym_kg_year <- manure_totals$fym_kg_day *364.25
+  manure_totals$slurry_kg_year <- manure_totals$slurry_kg_day *364.25
+  
+  #Multiplying year totals by DM ratio to get total DM/year
+  manure_totals$fym_kg_year <- manure_totals$fym_kg_year * manure_totals$fym_dm_ratio
+  manure_totals$slurry_kg_year <- manure_totals$slurry_kg_year * manure_totals$slurry_dm_ratio
+  manure_totals <- manure_totals[, .(animal_type, fym_kg_year, slurry_kg_year, housing_period_ratio, 
+                                     grazing_period_ratio)]
+  
+  # manure_totals$total_FYM[is.na(manure_totals$total_FYM)] <-0
+  # manure_totals$total_Slurry[is.na(manure_totals$total_Slurry)] <-0
+  # 
+  efs<-as.data.frame(read_excel(paste0(prj_dir,"nicholson2003_emissionfactors.xlsx")))
+  efs <- efs %>%
+    select(Source,Zn,Cu,Ni,Pb,Cd)
+  mgkgTokgkg <- 1000000
+  
+  efs[2:6] <- lapply(efs[2:6],function(x){
+    x <- x/mgkgTokgkg
+  })
+  
+  efs$animal_type <- c("sewage",
+                       "cattle","pigs","cattle","sheep","horses","pigs",
+                       "poultry","poultry",
+                       "fertiliser","fertiliser","fertiliser","fertiliser","compost")
+  efs$Source <- gsub("Cattle ","",efs$Source)
+  efs$Source <- gsub("Pig ","",efs$Source)
+  efs$Source <- gsub("manure","FYM",efs$Source)
+  efs$Source <- gsub("Layer ","",efs$Source)
+  efs$Source <- gsub("Broiler ","",efs$Source)
+  efs$Source <- gsub("Sheep ","",efs$Source)
+  efs$Source <- gsub("Horse ","",efs$Source)
+  efs$Source <- tolower(efs$Source)
+  colnames(efs) <- c("OUTPUT_TYPE","Zn","Cu","Ni","Pb","Cd","ANIMAL_TYPE")
+  # efs <- efs %>% 
+  # filter(OUTPUT_TYPE != "litter")
+  
+  # manure_totals<- manure_totals[efs, on = .(animal_type), allow.cartesian = TRUE]
+  manure_to_lu_ratios <- read.csv(paste0(prj_dir,"animal_numbers/historic_landuse/manure_to_grass_crop_ratios.csv"))
+  manure_totals<- manure_totals[manure_to_lu_ratios, on = .(animal_type), allow.cartesian = TRUE]
+  #slurry fym split taken from Livestock Calculations sheet P:/NEC03642_Mapping_Ag_Emissions_AC0112/AC0112-Agric_Inventory/NAEI_totals_NorthWyke/NH3inv2015_NARSES_Final_1_30092016.xlsm
+  #calculated by herd split and numbers
+  slurry_fym_split <- data.frame(animal_type = c("cattle","pigs","sheep","poultry","horses"),
+                                kept_on_fym = c(0.50,0.61,1,1,1),
+                                kept_on_slurry = c(0.50,0.39,0,0,0))
+  manure_totals <- left_join(manure_totals,slurry_fym_split)
+  
+  #calculate slurry fym split first
+  manure_totals$fym_kg_year <- manure_totals$fym_kg_year*manure_totals$kept_on_fym
+  manure_totals$slurry_kg_year <- manure_totals$slurry_kg_year*manure_totals$kept_on_slurry
+  #total to grazing
+  manure_totals$fym_to_grazing_kg <-manure_totals$fym_kg_year*manure_totals$grazing_period_ratio
+  manure_totals$slurry_to_grazing_kg <-manure_totals$slurry_kg_year*manure_totals$grazing_period_ratio
+  #total to spreading
+  manure_totals$fym_to_spreading_kg <-manure_totals$fym_kg_year*manure_totals$housing_period_ratio
+  manure_totals$slurry_to_spreading_kg <-manure_totals$slurry_kg_year*manure_totals$housing_period_ratio
+  manure_ratios <- manure_totals %>% 
+    select(animal_type,fym_to_arable,fym_to_grass,slurry_to_grass,slurry_to_arable)
+  manure_totals <- manure_totals %>% 
+    select(animal_type,fym_to_grazing_kg,slurry_to_grazing_kg,fym_to_spreading_kg,slurry_to_spreading_kg)
+  manure_totals <- pivot_longer(manure_totals,cols = 2:5,names_to = "manure_allocation",values_to = "value_in_kg") %>% as.data.frame()
+  manure_totals <- separate(manure_totals,col = manure_allocation,sep = "_to_", into = c("output_type","output_category"))
+  manure_totals$output_category <- gsub("_kg","",manure_totals$output_category)
+  manure_ratios
+  
+  manure_ratios <- pivot_longer(manure_ratios,cols = 2:5,names_to = "landuse",values_to = "SPREADING_CONSTANT") %>% as.data.frame()
+  manure_ratios <- separate(manure_ratios,col = landuse,sep = "_to_", into = c("output_type","LANDUSE"))
+  manure_ratios$LANDUSE <- gsub("arable","crop",manure_ratios$LANDUSE)
+  manure_ratios$output_category <- "spreading"
+  #rough grazing constants taken from the AENEID grazing split between arable, hills, heather landuse type
+  rough_constants <- data.frame(animal_type = c("cattle","sheep","cattle","sheep","cattle","cattle","horses"),
+                                output_type = c("fym","fym","fym","fym","slurry","slurry","fym"),
+                                output_category = c("grazing","grazing","grazing","grazing","grazing","grazing","grazing"),
+                                LANDUSE = c("rough","rough","grass","grass","rough","grass","grass"),
+                                SPREADING_CONSTANT = c(0.43,0.42,0.57,0.58,0.43,0.57,1)
+                                
+  )
+  manure_ratios <- bind_rows(manure_ratios, rough_constants)
+  manure_spreading_constants <- left_join(manure_totals,manure_ratios)
+
+  #manure_spreading_constants$LANDUSE[manure_spreading_constants$output_category=="grazing"] <- "grass"
+  colnames(manure_spreading_constants) <- c("ANIMAL_TYPE","OUTPUT_TYPE","OUTPUT_CAT","VALUE_IN_KG","LANDCOVER","SPREADING_CONSTANT")
+  manure_spreading_constants <- as.data.table(manure_spreading_constants)
+  setkey(manure_spreading_constants, "ANIMAL_TYPE","LANDCOVER")
+  setkey(lstk_county_dt, "ANIMAL_TYPE","LANDCOVER")
+  rm(DM_ratios)
+  rm(livestock_numbers)
+  rm(manure_output)
+  rm(manure_ratios)
+  rm(manure_to_lu_ratios)
+  rm(manure_totals)
+  
+  lstk_county_dt <- manure_spreading_constants[lstk_county_dt,nomatch = 0, allow.cartesian =TRUE]
+  #rm(manure_spreading_constants)
+  lstk_county_dt[is.na(lstk_county_dt)] <- 0
+  
+  # calculate cell proportion (of animal type and land cover) of county total
+  lstk_county_dt[,MANURE_PER_YEAR:=
+                   ANIMAL_NUMBER*VALUE_IN_KG
+                #,
+                #by=.(COUNTY,ANIMAL_TYPE,OUTPUT_TYPE,OUTPUT_CAT,YEAR)
+                 ]
+  
+  manurecheck <- lstk_county_dt %>% 
+    filter(ANIMAL_TYPE == "cattle"&OUTPUT_TYPE=="fym") %>% 
+    select(COUNTY,OUTPUT_TYPE,OUTPUT_CAT,MANURE_PER_YEAR)
+  manurecheck <- unique(manurecheck)
+  sum(manurecheck$MANURE_PER_YEAR)/1000000
+  
+  lstk_county_dt[, MANURE_PER_YEAR_PER_LANDUSE := 
+                   MANURE_PER_YEAR*SPREADING_CONSTANT,
+                 by = .(COUNTY,ANIMAL_TYPE,OUTPUT_TYPE,OUTPUT_CAT,
+                        LANDCOVER,YEAR)]
+  
+  manurecheck <- lstk_county_dt %>% 
+    filter(ANIMAL_TYPE == "cattle"&OUTPUT_TYPE=="fym") %>% 
+    select(COUNTY,OUTPUT_TYPE,OUTPUT_CAT,LANDCOVER,MANURE_PER_YEAR_PER_LANDUSE)
+  manurecheck <- unique(manurecheck)
+  sum(manurecheck$MANURE_PER_YEAR_PER_LANDUSE)/1000000
+  
+  
+  lstk_county_dt[,AREA_PROP_COUNTY := AREA/sum(AREA), by = .(COUNTY,LANDCOVER,YEAR,ANIMAL_TYPE,OUTPUT_CAT,OUTPUT_TYPE)]
+  
+  # calculate total animal per cell
+  lstk_county_dt[, OUTPUT_PER_CELL := 
+                   AREA_PROP_COUNTY*MANURE_PER_YEAR_PER_LANDUSE]
+  
+  manurecheck <- lstk_county_dt %>% 
+    filter(ANIMAL_TYPE == "cattle"&OUTPUT_TYPE=="fym") %>% 
+    select(x,y,OUTPUT_PER_CELL)
+  sum(manurecheck$OUTPUT_PER_CELL)/1000000
+
+  lstk_county_dt_slim <- lstk_county_dt[, .(x, y, ANIMAL_TYPE, OUTPUT_TYPE, OUTPUT_CAT,LANDCOVER,
+                                            YEAR,OUTPUT_PER_CELL)]
+  
+  efs$ANIMAL_TYPE <- as.character(efs$ANIMAL_TYPE)
+  efs$OUTPUT_TYPE <- as.character(efs$OUTPUT_TYPE)
+  lstk_county_dt_slim$ANIMAL_TYPE <- as.character(lstk_county_dt_slim$ANIMAL_TYPE)
+  lstk_county_dt_slim$OUTPUT_TYPE <- as.character(lstk_county_dt_slim$OUTPUT_TYPE)
+  
+  #incorporating the broiler/layer split by changing the emission factor proportionally
+  poult_efs <- efs %>% 
+    filter(ANIMAL_TYPE == "poultry")
+  efs <- efs %>% 
+    filter(ANIMAL_TYPE != "poultry")
+  broiler_split <- read_excel(paste0(prj_dir,"animal_numbers/Broiler_prop.xlsx"),sheet='Prop_broiler',range="A1:C28")
+  broiler_split <- broiler_split %>% 
+    filter(Year == annum) %>% 
+    select(Broilers, `Layers(n23+n26)`)
+  colnames(broiler_split) <- c("litter","fym")
+  broiler_split <- pivot_longer(broiler_split,cols = everything(),names_to = "OUTPUT_TYPE",values_to = "SPLIT")
+  poult_efs <- left_join(poult_efs,broiler_split)
+  poult_efs <- as.data.table(poult_efs)
+  inc_cols <- c("Zn","Cu","Ni","Pb","Cd")
+  poult_efs[, (inc_cols) := lapply(.SD, function(x) 
+    x * poult_efs[['SPLIT']] ), .SDcols = inc_cols]
+  poult_efs$OUTPUT_TYPE[which(poult_efs$OUTPUT_TYPE == "litter")] <- "fym"
+  poult_efs <- poult_efs[, lapply(.SD, sum, na.rm=TRUE), by=.(OUTPUT_TYPE,ANIMAL_TYPE), .SDcols =inc_cols]
+  
+  efs <- efs %>% 
+    filter(ANIMAL_TYPE %in% unique(lstk_county_dt_slim$ANIMAL_TYPE)) %>%
+    filter(OUTPUT_TYPE %in% unique(lstk_county_dt_slim$OUTPUT_TYPE))
+  efs<-bind_rows(efs,poult_efs)
+  
+  efs <- pivot_longer(efs,cols = c("Zn","Cu","Ni","Pb","Cd"),names_to= "METAL_NAME",values_to = "METAL_FACTOR")
+  efs <- as.data.table(efs)
+  
+  setkey(efs, "ANIMAL_TYPE", "OUTPUT_TYPE")
+  setkey(lstk_county_dt_slim, "ANIMAL_TYPE", "OUTPUT_TYPE")
+  lstk_county_dt_slim<- lstk_county_dt_slim[efs, on = .(ANIMAL_TYPE,OUTPUT_TYPE), allow.cartesian = TRUE]
+  
+  lstk_county_dt_slim[, OUTPUT_METAL := OUTPUT_PER_CELL*METAL_FACTOR#,
+                                             #by=.(x,y,YEAR,LANDCOVER,ANIMAL_TYPE,OUTPUT_TYPE,METAL_NAME)
+                                             ]
+  
+  total_check <- lstk_county_dt_slim %>% 
+    filter(ANIMAL_TYPE == "cattle" & OUTPUT_TYPE == "fym" &METAL_NAME =="Zn"&LANDCOVER == "grass")
+  total_metal <- sum(total_check$OUTPUT_METAL)
+  zn_cattle<- efs %>% 
+    filter(OUTPUT_TYPE=="fym"&ANIMAL_TYPE=="cattle" &METAL_NAME=="Zn")
+  (total_metal/zn_cattle$METAL_FACTOR)/1000000
+  
+  totals <- lstk_county_dt_slim %>% 
+    group_by(LANDCOVER,ANIMAL_TYPE,METAL_NAME,YEAR,OUTPUT_TYPE) %>% 
+    summarise(TOTAL = sum(OUTPUT_METAL)) %>% 
+    as.data.frame()
+  
+  totals$TOTAL_IN_T <- totals$TOTAL/1000
+  totals_list[[annum]] <- totals
+  out_dir <- "//nerclactdb.adceh.ceh.ac.uk/Projects/PROJECTS1/SPEED_Metal/Atmos_inputs/Historic_data/Industry_activity_data_and_research/Agriculture/animal_numbers/rasters_updated/"
+  for(i in unique(lstk_county_dt_slim$LANDCOVER)){
+    for(j in unique(lstk_county_dt_slim$ANIMAL_TYPE)){
+      for(k in unique(lstk_county_dt_slim$METAL_NAME)){
+        for(z in unique(lstk_county_dt_slim$OUTPUT_TYPE)){
+          lstk_xy <- lstk_county_dt_slim %>%
+            filter(LANDCOVER == i& ANIMAL_TYPE == j & METAL_NAME == k & OUTPUT_TYPE ==z) %>%
+            select(x,y,OUTPUT_METAL) %>%
+            group_by(x,y) %>%
+            summarise(OUTPUT_METAL = sum(OUTPUT_METAL))
+          
+          if(nrow(lstk_xy)>0){
+            lstk_r <- rasterFromXYZ(lstk_xy)
+            
+            kgkm2togm2 <- 1000
+            lstk_r <- lstk_r/kgkm2togm2
+            writeRaster(lstk_r,paste0(out_dir,tolower(k),"_",annum,"_",j,"_",z,"_",i,"_g_m2_1km.tif"),overwrite=TRUE)
+            
+            # writeRaster(lstk_r,paste0(out_dir,annum,"_",k,"_from_",j,"_on_",i,"_in_kg_per_1km_cell.tif"),overwrite=TRUE)
+            print(paste(annum,i,j,k,z))
+          }
+        }
+      }
+    }
+  }
+  
+  
+  # for(i in unique(lstk_county_dt_slim$LANDCOVER)){
+  #   for(k in unique(lstk_county_dt_slim$METAL_NAME)){
+  #     lstk_agg_5k <- lstk_county_dt_slim %>% 
+  #       filter(LANDCOVER == i& METAL_NAME == k) %>%
+  #       select(x,y,OUTPUT_METAL) %>% 
+  #       group_by(x,y) %>% 
+  #       summarise(OUTPUT_METAL = sum(OUTPUT_METAL))
+  #     sum(lstk_agg_5k$OUTPUT_METAL)
+  #     if(nrow(lstk_agg_5k)>0){
+  #       lstk_agg_5k <- rasterFromXYZ(lstk_agg_5k)
+  #       cellStats(lstk_agg_5k, "sum")
+  #       lstk_agg_5k <- raster::aggregate(lstk_agg_5k, fact =5, fun =sum)
+  #       bb <- extent(55000,660000,10000,1215000)
+  #       lstk_agg_5k<- setExtent(lstk_agg_5k,bb,keepres=T)
+  #       writeRaster(lstk_agg_5k,paste0(out_dir,annum,"_",k,"_on_",i,"_in_kg_per_5km_cell.tif"),overwrite=TRUE)
+  #       print(paste(annum,i,k))
+  #     }
+  #   }
+  # }
+  
+}
+
+totals_df <- bind_rows(totals_list)
+speed_dir <- "//nerclactdb.adceh.ceh.ac.uk/Projects/PROJECTS1/SPEED_Metal/Atmos_inputs/Historic_data/Industry_activity_data_and_research/Agriculture/animal_numbers/"
+write.csv(totals_df, file = paste0(speed_dir, "metal_totals_1750_1950_by_animal_landuse.csv"),row.names = F)

@@ -1,0 +1,25 @@
+name: "tz_web_distill"
+title: "Thomas Zwagerman"
+description: |
+  This is the personal website of Spatial Data Analyst Thomas Zwagerman.
+output_dir: "_site"
+theme: theme.css
+navbar:
+  logo:
+    image: logo.png
+    href: https://tzwagerman.netlify.app/
+  right:
+    - text: "Home"
+      href: index.html
+    - text: "About"
+      href: about.html
+    - text: "Publications"
+      href: publications.html
+    - icon: "fa fa-github"
+      href: https://github.com/thomaszwagerman
+    - icon: "fa fa-twitter"
+      href: https://twitter.com/thomzwa
+    - icon: "fa fa-linkedin"
+      href: https://www.linkedin.com/in/thomaszwagerman/
+output: distill::distill_article
+preview: site_preview.jpg

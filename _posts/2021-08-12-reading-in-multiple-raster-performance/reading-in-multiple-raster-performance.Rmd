@@ -1,5 +1,5 @@
 ---
-title: "Benchmarking four methods to read in multiple rasters files."
+title: "Benchmarking four methods to read multiple rasters files in R."
 description: |
   Testing the performance of four different methods of reading in multiple raster files to reduce processing time in my modelling work.
 author:

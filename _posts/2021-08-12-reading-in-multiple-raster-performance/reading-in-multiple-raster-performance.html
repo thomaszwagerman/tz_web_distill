@@ -84,7 +84,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 </style>
 
   <!--radix_placeholder_meta_tags-->
-  <title>Benchmarking four methods to read in multiple rasters files.</title>
+  <title>Benchmarking four methods to read multiple rasters files in R.</title>
   
   <meta property="description" itemprop="description" content="Testing the performance of four different methods of reading in multiple raster files to reduce processing time in my modelling work."/>
   
@@ -95,21 +95,21 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <meta name="article:author" content="Thomas Zwagerman"/>
   
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
-  <meta property="og:title" content="Benchmarking four methods to read in multiple rasters files."/>
+  <meta property="og:title" content="Benchmarking four methods to read multiple rasters files in R."/>
   <meta property="og:type" content="article"/>
   <meta property="og:description" content="Testing the performance of four different methods of reading in multiple raster files to reduce processing time in my modelling work."/>
   <meta property="og:locale" content="en_US"/>
   
   <!--  https://dev.twitter.com/cards/types/summary -->
   <meta property="twitter:card" content="summary"/>
-  <meta property="twitter:title" content="Benchmarking four methods to read in multiple rasters files."/>
+  <meta property="twitter:title" content="Benchmarking four methods to read multiple rasters files in R."/>
   <meta property="twitter:description" content="Testing the performance of four different methods of reading in multiple raster files to reduce processing time in my modelling work."/>
   
   <!--/radix_placeholder_meta_tags-->
   <!--radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","categories"]}},"value":[{"type":"character","attributes":{},"value":["Benchmarking four methods to read in multiple rasters files."]},{"type":"character","attributes":{},"value":["Testing the performance of four different methods of reading in multiple raster files to reduce processing time in my modelling work.\n"]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Thomas Zwagerman"]},{"type":"character","attributes":{},"value":["https://twitter.com/thomzwa"]},{"type":"character","attributes":{},"value":["Centre for Ecology & Hydrology"]},{"type":"character","attributes":{},"value":["https://www.ceh.ac.uk/"]}]}]},{"type":"character","attributes":{},"value":["08-12-2021"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["self_contained","code_folding","toc"]}},"value":[{"type":"logical","attributes":{},"value":[false]},{"type":"logical","attributes":{},"value":[true]},{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"character","attributes":{},"value":["rspatial","raster","terra","benchmark"]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","categories"]}},"value":[{"type":"character","attributes":{},"value":["Benchmarking four methods to read multiple rasters files in R."]},{"type":"character","attributes":{},"value":["Testing the performance of four different methods of reading in multiple raster files to reduce processing time in my modelling work.\n"]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Thomas Zwagerman"]},{"type":"character","attributes":{},"value":["https://twitter.com/thomzwa"]},{"type":"character","attributes":{},"value":["Centre for Ecology & Hydrology"]},{"type":"character","attributes":{},"value":["https://www.ceh.ac.uk/"]}]}]},{"type":"character","attributes":{},"value":["08-12-2021"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["self_contained","code_folding","toc"]}},"value":[{"type":"logical","attributes":{},"value":[false]},{"type":"logical","attributes":{},"value":[true]},{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"character","attributes":{},"value":["rspatial","raster","terra","benchmark"]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   
@@ -1452,7 +1452,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Benchmarking four methods to read in multiple rasters files.","description":"Testing the performance of four different methods of reading in multiple raster files to reduce processing time in my modelling work.","authors":[{"author":"Thomas Zwagerman","authorURL":"https://twitter.com/thomzwa","affiliation":"Centre for Ecology & Hydrology","affiliationURL":"https://www.ceh.ac.uk/","orcidID":""}],"publishedDate":"2021-08-12T00:00:00.000+01:00","citationText":"Zwagerman, 2021"}
+{"title":"Benchmarking four methods to read multiple rasters files in R.","description":"Testing the performance of four different methods of reading in multiple raster files to reduce processing time in my modelling work.","authors":[{"author":"Thomas Zwagerman","authorURL":"https://twitter.com/thomzwa","affiliation":"Centre for Ecology & Hydrology","affiliationURL":"https://www.ceh.ac.uk/","orcidID":""}],"publishedDate":"2021-08-12T00:00:00.000+01:00","citationText":"Zwagerman, 2021"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -1462,7 +1462,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <!--/radix_placeholder_site_before_body-->
 
 <div class="d-title">
-<h1>Benchmarking four methods to read in multiple rasters files.</h1>
+<h1>Benchmarking four methods to read multiple rasters files in R.</h1>
 <!--radix_placeholder_categories-->
 <div class="dt-tags">
 <div class="dt=tag">rspatial</div>
@@ -1619,42 +1619,42 @@ Photo by <a href="https://unsplash.com/@oskaryil?utm_source=unsplash&utm_medium=
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">stack</td>
-<td style="text-align: right;">67.3899</td>
-<td style="text-align: right;">74.80770</td>
-<td style="text-align: right;">109.99993</td>
-<td style="text-align: right;">80.82865</td>
-<td style="text-align: right;">117.6545</td>
-<td style="text-align: right;">849.3416</td>
+<td style="text-align: right;">70.1520</td>
+<td style="text-align: right;">76.13285</td>
+<td style="text-align: right;">97.10143</td>
+<td style="text-align: right;">81.62750</td>
+<td style="text-align: right;">98.98925</td>
+<td style="text-align: right;">323.7884</td>
 <td style="text-align: right;">100</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">lapply_and_raster</td>
-<td style="text-align: right;">50.4653</td>
-<td style="text-align: right;">60.19155</td>
-<td style="text-align: right;">85.14547</td>
-<td style="text-align: right;">66.42890</td>
-<td style="text-align: right;">77.9634</td>
-<td style="text-align: right;">314.4177</td>
+<td style="text-align: right;">53.2558</td>
+<td style="text-align: right;">57.94670</td>
+<td style="text-align: right;">75.24542</td>
+<td style="text-align: right;">62.27515</td>
+<td style="text-align: right;">71.61345</td>
+<td style="text-align: right;">381.7267</td>
 <td style="text-align: right;">100</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">read_stars</td>
-<td style="text-align: right;">1111.5232</td>
-<td style="text-align: right;">1216.59980</td>
-<td style="text-align: right;">1499.08140</td>
-<td style="text-align: right;">1344.28755</td>
-<td style="text-align: right;">1610.0361</td>
-<td style="text-align: right;">5042.0604</td>
+<td style="text-align: right;">1200.8969</td>
+<td style="text-align: right;">1242.41510</td>
+<td style="text-align: right;">1426.22606</td>
+<td style="text-align: right;">1301.67745</td>
+<td style="text-align: right;">1454.99290</td>
+<td style="text-align: right;">3614.2061</td>
 <td style="text-align: right;">100</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">terra_rast</td>
-<td style="text-align: right;">7.3705</td>
-<td style="text-align: right;">8.84000</td>
-<td style="text-align: right;">13.83587</td>
-<td style="text-align: right;">10.44360</td>
-<td style="text-align: right;">13.9959</td>
-<td style="text-align: right;">64.7728</td>
+<td style="text-align: right;">8.0477</td>
+<td style="text-align: right;">8.98450</td>
+<td style="text-align: right;">11.07999</td>
+<td style="text-align: right;">9.87475</td>
+<td style="text-align: right;">12.02295</td>
+<td style="text-align: right;">30.6636</td>
 <td style="text-align: right;">100</td>
 </tr>
 </tbody>
