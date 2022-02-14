@@ -7,7 +7,7 @@ author:
     url: https://twitter.com/thomzwa
     affiliation: Centre for Ecology & Hydrology
     affiliation_url: https://www.ceh.ac.uk/
-date: "`r Sys.Date()`"
+date: 01-05-2021
 output: 
   distill::distill_article:
         self_contained: false
