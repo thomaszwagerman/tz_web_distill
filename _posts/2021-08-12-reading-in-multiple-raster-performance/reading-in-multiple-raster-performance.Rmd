@@ -42,7 +42,6 @@ For that reason I thought I'd test some different ways of processing rasters, so
 I can't share the rasters I used for my project, so instead I'm working with a small dataset from the FAO, called [Gridded Livestock of the World](http://www.fao.org/livestock-systems/global-distributions/en/). Pretty much what it says on the tin, with different rasters for each animal type. For example here is the raster for cattle: 
 
 ```{r directory_numbers, warning = FALSE, echo = FALSE, message=FALSE, code_folding=TRUE}
-#Libraries----
 library(tidyverse)
 library(raster)
 library(sf)
@@ -52,9 +51,9 @@ library(ggplot2)
 library(knitr)
 library(terra)
 
-lu_dir <- paste0(getwd(),"/glw_rasters/")
+lu_dir <- paste0(getwd(), "/glw_rasters/")
 l_files <- list.files(lu_dir, pattern = ".tif")
-l_files <- paste0(lu_dir,l_files)
+l_files <- paste0(lu_dir, l_files)
 p1 <- rast(l_files[1])
 plot(p1)
 ```
@@ -77,12 +76,12 @@ A method I was curious about after reading [Chapter 3 of Efficient R programming
 Of course, that is multiple functions, so to make it work within microbenchmark, I'm defining it into a single function here. Normally I probably wouldn't bother doing that.
 
 ```{r lapply_method, warning = FALSE, message=FALSE, echo = TRUE, results=FALSE, code_folding=FALSE}
-func_apply_n_raster <- function(files_to_read){
-#reading the rasters in individually, into a list object
-l_rasters <- lapply(files_to_read, raster)
-#then stack the read in list object into a single stack
-s_rasters <- stack(l_rasters)
-return(s_rasters)
+func_apply_n_raster <- function(files_to_read) {
+  # Reading the rasters in individually, into a list object
+  l_rasters <- lapply(files_to_read, raster)
+  # Then stack the read in list object into a single stack
+  s_rasters <- stack(l_rasters)
+  return(s_rasters)
 }
 ```
 
@@ -111,9 +110,10 @@ res <- microbenchmark(
   terra_rast = rast(l_files),
   times = 100
 )
-#the reason I'm passing a summary() function through to kable is that
-#kable (or any paged table function) doesn't provide expected output with a microbenchmark output
-#see this open issue https://github.com/rstudio/rmarkdown/issues/1469
+
+# The reason I'm passing a summary() function through to kable is that
+# {kable} (or any paged table function) doesn't provide expected output with a microbenchmark output
+# see this open issue https://github.com/rstudio/rmarkdown/issues/1469
 kable(summary(res))
 ```
 
