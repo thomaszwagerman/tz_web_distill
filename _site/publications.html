@@ -50,16 +50,17 @@ pre.numberSource code > span > a:first-child::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {   }
+  { color: #00769e; background-color: #f1f3f5; }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
+code span { color: #00769e; } /* Normal */
 code span.al { color: #ad0000; } /* Alert */
 code span.an { color: #5e5e5e; } /* Annotation */
-code span.at { } /* Attribute */
+code span.at { color: #657422; } /* Attribute */
 code span.bn { color: #ad0000; } /* BaseN */
 code span.bu { } /* BuiltIn */
-code span.cf { color: #007ba5; } /* ControlFlow */
+code span.cf { color: #00769e; } /* ControlFlow */
 code span.ch { color: #20794d; } /* Char */
 code span.cn { color: #8f5902; } /* Constant */
 code span.co { color: #5e5e5e; } /* Comment */
@@ -73,9 +74,9 @@ code span.fl { color: #ad0000; } /* Float */
 code span.fu { color: #4758ab; } /* Function */
 code span.im { } /* Import */
 code span.in { color: #5e5e5e; } /* Information */
-code span.kw { color: #007ba5; } /* Keyword */
+code span.kw { color: #00769e; } /* Keyword */
 code span.op { color: #5e5e5e; } /* Operator */
-code span.ot { color: #007ba5; } /* Other */
+code span.ot { color: #00769e; } /* Other */
 code span.pp { color: #ad0000; } /* Preprocessor */
 code span.sc { color: #5e5e5e; } /* SpecialChar */
 code span.ss { color: #20794d; } /* SpecialString */
@@ -1027,10 +1028,6 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     margin-top: 1.5em;
   }
 
-  .figure img {
-    width: 100%;
-  }
-
   .figure .caption {
     color: rgba(0, 0, 0, 0.6);
     font-size: 12px;
@@ -1860,6 +1857,12 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
       // hoverable references
       $('span.citation[data-cites]').each(function() {
+        if ($(this).children()[0].nodeName == "D-FOOTNOTE") {
+          var fn = $(this).children()[0]
+          $(this).html(fn.shadowRoot.querySelector("sup"))
+          $(this).id = fn.id
+          fn.remove()
+        }
         var refs = $(this).attr('data-cites').split(" ");
         var refHtml = refs.map(function(ref) {
           return "<p>" + $('#ref-' + ref).html() + "</p>";
@@ -1874,6 +1877,31 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
           placement: 'bottom-start'
         });
       });
+
+      // fix footnotes in tables (#411)
+      // replacing broken distill.pub feature
+      $('table d-footnote').each(function() {
+        // we replace internal showAtNode methode which is triggered when hovering a footnote
+        this.hoverBox.showAtNode = function(node) {
+          // ported from https://github.com/distillpub/template/pull/105/files
+          calcOffset = function(elem) {
+              let x = elem.offsetLeft;
+              let y = elem.offsetTop;
+              // Traverse upwards until an `absolute` element is found or `elem`
+              // becomes null.
+              while (elem = elem.offsetParent && elem.style.position != 'absolute') {
+                  x += elem.offsetLeft;
+                  y += elem.offsetTop;
+              }
+
+              return { left: x, top: y };
+          }
+          // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetTop
+          const bbox = node.getBoundingClientRect();
+          const offset = calcOffset(node);
+          this.show([offset.left + bbox.width, offset.top + bbox.height]);
+        }
+      })
 
       // clear polling timer
       clearInterval(tid);
@@ -1973,6 +2001,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     // mark non-body figures created by knitr chunks as 100% width
     $('.layout-chunk').each(function(i, val) {
       var figures = $(this).find('img, .html-widget');
+      // ignore leaflet img layers (#106)
+      figures = figures.filter(':not(img[class*="leaflet"])')
       if ($(this).attr('data-layout') !== "l-body") {
         figures.css('width', '100%');
       } else {
@@ -1995,7 +2025,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     // get rid of index.html references in header
     if (window.location.protocol !== "file:") {
       $('.distill-site-header a[href]').each(function(i,val) {
-        $(this).attr('href', $(this).attr('href').replace("index.html", "./"));
+        $(this).attr('href', $(this).attr('href').replace(/^index[.]html/, "./"));
       });
     }
 
@@ -2345,7 +2375,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     color: var(--hover-color, white);
   }</style>
   <!--/radix_placeholder_distill-->
-  <script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+  <script src="site_libs/header-attrs-2.15/header-attrs.js"></script>
   <script src="site_libs/popper-2.6.0/popper.min.js"></script>
   <link href="site_libs/tippy-6.2.7/tippy.css" rel="stylesheet" />
   <link href="site_libs/tippy-6.2.7/tippy-light-border.css" rel="stylesheet" />
@@ -2410,18 +2440,74 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
 <div class="d-article">
 <h2 id="conference-contributions">Conference contributions</h2>
-<p>Dragosits U., Carnell E.J., Tomlinson S.J., Thomas I.N., Dore A.J., <strong>Zwagerman T.,</strong> Rowe E.C., Mitchell Z., Jones L.. Misselbrook T.H., Dore C., Hampshire K., German R., Raoult J., Pridmore A., Marner B., Laxen D., Hodgins L., Caporn S., Field C., Stevens C., Cunha A., Zappala, S. 2021. Nitrogen Futures – What options for the UK towards 2030 and beyond to mitigate atmospheric N impacts? <em>Conference abstract for oral presentation, Community of Air Pollution Effects Research (CAPER), 23-24 Mar 2021.</em></p>
-<p>Carnell. E.J., Tomlinson S.J., Dore A.J., Thomas I.N., <strong>Zwagerman T.,</strong> Rowe E., Mitchell Z., Misselbrook T.H., McIlroy J., Magowan E., Carolan R., Dragosits U. 2021 A methodology to assess the effectiveness of spatially targeted ammonia mitigation: a case study for Northern Ireland. <em>Conference abstract for oral presentation, Community of Air Pollution Effects Research (CAPER), 23-24 Mar 2021.</em></p>
-<p>Dragosits U., Carnell E.J., Tomlinson S.J., Thomas I.N., Dore A.J., <strong>Zwagerman T.,</strong> Rowe E.C., Mitchell Z., Jones L.. Misselbrook T.H., Dore C., Hampshire K., German R., Raoult J., Pridmore A., Marner B., Laxen D., Hodgins L., Caporn S., Field C., Stevens C. 2020. Nitrogen Futures – What options for the UK towards 2030 and beyond to mitigate atmospheric N impacts? <em>Conference abstract for oral presentation, Community of Air Pollution Effects Research (CAPER), 24-25 Mar 2020. Swansea. (meeting postponed to 2021 due to COVID-19)</em></p>
-<p>Carnell. E.J., Tomlinson S.J., Dore A.J., Thomas I.N., <strong>Zwagerman T.,</strong> Rowe E., Mitchell Z., Misselbrook T.H., McIlroy J., Magowan E., Carolan R., Dragosits U. 2020. A methodology to assess the effectiveness of spatially targeted ammonia mitigation: a case study for Northern Ireland. <em>Conference abstract for oral presentation, Community of Air Pollution Effects Research (CAPER), 24-25 Mar 2020. Swansea. (meeting postponed to 2021 due to COVID-19)</em></p>
-<p>Tomlinson S.J., Thomas I.N., Carnell E.J., Dragosits U., Dore A.J., <strong>Zwagerman T.,</strong> Harrison S., Pedde S. and Lofts S. 2019. Predicting topsoil concentrations of five metals in the UK from 1750 to 2100. <em>Conference abstract and oral presentation, Community of Air Pollution Effects Research (CAPER), 8-9 May 2019. Edinburgh.</em></p>
+<p>Dragosits U., Carnell E.J., Tomlinson S.J., Thomas I.N., Dore A.J.,
+<strong>Zwagerman T.,</strong> Rowe E.C., Mitchell Z., Jones L..
+Misselbrook T.H., Dore C., Hampshire K., German R., Raoult J., Pridmore
+A., Marner B., Laxen D., Hodgins L., Caporn S., Field C., Stevens C.,
+Cunha A., Zappala, S. 2021. Nitrogen Futures – What options for the UK
+towards 2030 and beyond to mitigate atmospheric N impacts?
+<em>Conference abstract for oral presentation, Community of Air
+Pollution Effects Research (CAPER), 23-24 Mar 2021.</em></p>
+<p>Carnell. E.J., Tomlinson S.J., Dore A.J., Thomas I.N.,
+<strong>Zwagerman T.,</strong> Rowe E., Mitchell Z., Misselbrook T.H.,
+McIlroy J., Magowan E., Carolan R., Dragosits U. 2021 A methodology to
+assess the effectiveness of spatially targeted ammonia mitigation: a
+case study for Northern Ireland. <em>Conference abstract for oral
+presentation, Community of Air Pollution Effects Research (CAPER), 23-24
+Mar 2021.</em></p>
+<p>Dragosits U., Carnell E.J., Tomlinson S.J., Thomas I.N., Dore A.J.,
+<strong>Zwagerman T.,</strong> Rowe E.C., Mitchell Z., Jones L..
+Misselbrook T.H., Dore C., Hampshire K., German R., Raoult J., Pridmore
+A., Marner B., Laxen D., Hodgins L., Caporn S., Field C., Stevens C.
+2020. Nitrogen Futures – What options for the UK towards 2030 and beyond
+to mitigate atmospheric N impacts? <em>Conference abstract for oral
+presentation, Community of Air Pollution Effects Research (CAPER), 24-25
+Mar 2020. Swansea. (meeting postponed to 2021 due to COVID-19)</em></p>
+<p>Carnell. E.J., Tomlinson S.J., Dore A.J., Thomas I.N.,
+<strong>Zwagerman T.,</strong> Rowe E., Mitchell Z., Misselbrook T.H.,
+McIlroy J., Magowan E., Carolan R., Dragosits U. 2020. A methodology to
+assess the effectiveness of spatially targeted ammonia mitigation: a
+case study for Northern Ireland. <em>Conference abstract for oral
+presentation, Community of Air Pollution Effects Research (CAPER), 24-25
+Mar 2020. Swansea. (meeting postponed to 2021 due to COVID-19)</em></p>
+<p>Tomlinson S.J., Thomas I.N., Carnell E.J., Dragosits U., Dore A.J.,
+<strong>Zwagerman T.,</strong> Harrison S., Pedde S. and Lofts S. 2019.
+Predicting topsoil concentrations of five metals in the UK from 1750 to
+2100. <em>Conference abstract and oral presentation, Community of Air
+Pollution Effects Research (CAPER), 8-9 May 2019. Edinburgh.</em></p>
 <h2 id="contract-reports">Contract reports</h2>
-<p>Dragosits U., Carnell E.J., Tomlinson S.J., Misselbrook T.H., Rowe E.C., Mitchell Z., Thomas I.N., Dore A.J., Levy P., <strong>Zwagerman T.,</strong> Jones L., Dore C., Hampshire K., Raoult J., German R., Pridmore A., Williamson T., Marner B., Hodgins L., Laxen D., Wilkins K., Stevens C., Field C., Caporn S. 2020. Nitrogen Futures. <em>Draft report to JNCC. 36pp.</em></p>
-<p>Dragosits U., Carnell E.J., Tomlinson S.J., Misselbrook T.H., Rowe E.C., Mitchell Z., Thomas I.N., <strong>Zwagerman T.,</strong> Dore A.J., Levy P., Dore C., Hampshire K., German R., Raoult J., Marner B., Hodgins L., Laxen D. 2020. UK and country scale scenario modelling. <em>Annex 4 Nitrogen Futures. Draft report to JNCC. 114pp.</em></p>
-<p>Carnell E.J., Tomlinson S.J., Thomas I.N., <strong>Zwagerman T.,</strong> Dore A.J., Mitchell Z., Rowe E., Misselbrook T.H., McIlroy J., Magowan E., Carolan R. and Dragosits U. 2020 Scenario modelling - spatial targeting of ammonia mitigation measures in Northern Ireland. <em>Report to Daera, UKCEH report (May 2020)</em></p>
-<p>Thistlethwaite, G., Smith, H.. Brown, P., MacCarthy, J., Pang, Y., Passant, N., Richmond, B., Wakeling, D., Walker, C., Hampshire, K., King, K., May, K., Garland, L ., Zhang, H., Jones, L ., Thomson, A., Buys, G., Clilverd, H., Malcolm, H., <strong>Zwagerman, T.,</strong> Henshall, P ., Matthews, R., Cardenas, L., Gilhespy, S., Misselbrook T. 2020. Greenhouse Gas Inventories for England, Scotland, Wales &amp; Northern Ireland: 1990-2018. <em>NAEI.</em></p>
-<p>Tomlinson S.J, Thomas I.N., <strong>Zwagerman T.,</strong> Carnell E.J., Tang Y.S., Sutton M.A. and Dragosits U. 2019. Modelling and mapping UK emissions of ammonia, methane and nitrous oxide from agriculture, nature, waste disposal and other miscellaneous sources for 2017 (Contribution to the UK National Atmospheric Emission Inventory and Greenhouse Gas Inventory). <em>Annual Report to Ricardo-AEA/Defra on the NAEI/GHGI Project. CEH Report. 23pp. (April 2019)</em></p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<p>Dragosits U., Carnell E.J., Tomlinson S.J., Misselbrook T.H., Rowe
+E.C., Mitchell Z., Thomas I.N., Dore A.J., Levy P., <strong>Zwagerman
+T.,</strong> Jones L., Dore C., Hampshire K., Raoult J., German R.,
+Pridmore A., Williamson T., Marner B., Hodgins L., Laxen D., Wilkins K.,
+Stevens C., Field C., Caporn S. 2020. Nitrogen Futures. <em>Draft report
+to JNCC. 36pp.</em></p>
+<p>Dragosits U., Carnell E.J., Tomlinson S.J., Misselbrook T.H., Rowe
+E.C., Mitchell Z., Thomas I.N., <strong>Zwagerman T.,</strong> Dore
+A.J., Levy P., Dore C., Hampshire K., German R., Raoult J., Marner B.,
+Hodgins L., Laxen D. 2020. UK and country scale scenario modelling.
+<em>Annex 4 Nitrogen Futures. Draft report to JNCC. 114pp.</em></p>
+<p>Carnell E.J., Tomlinson S.J., Thomas I.N., <strong>Zwagerman
+T.,</strong> Dore A.J., Mitchell Z., Rowe E., Misselbrook T.H., McIlroy
+J., Magowan E., Carolan R. and Dragosits U. 2020 Scenario modelling -
+spatial targeting of ammonia mitigation measures in Northern Ireland.
+<em>Report to Daera, UKCEH report (May 2020)</em></p>
+<p>Thistlethwaite, G., Smith, H.. Brown, P., MacCarthy, J., Pang, Y.,
+Passant, N., Richmond, B., Wakeling, D., Walker, C., Hampshire, K.,
+King, K., May, K., Garland, L ., Zhang, H., Jones, L ., Thomson, A.,
+Buys, G., Clilverd, H., Malcolm, H., <strong>Zwagerman, T.,</strong>
+Henshall, P ., Matthews, R., Cardenas, L., Gilhespy, S., Misselbrook T.
+2020. Greenhouse Gas Inventories for England, Scotland, Wales &amp;
+Northern Ireland: 1990-2018. <em>NAEI.</em></p>
+<p>Tomlinson S.J, Thomas I.N., <strong>Zwagerman T.,</strong> Carnell
+E.J., Tang Y.S., Sutton M.A. and Dragosits U. 2019. Modelling and
+mapping UK emissions of ammonia, methane and nitrous oxide from
+agriculture, nature, waste disposal and other miscellaneous sources for
+2017 (Contribution to the UK National Atmospheric Emission Inventory and
+Greenhouse Gas Inventory). <em>Annual Report to Ricardo-AEA/Defra on the
+NAEI/GHGI Project. CEH Report. 23pp. (April 2019)</em></p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
 </div>
